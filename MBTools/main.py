@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
-# sys.path.append(os.path.join(sys.path[0], "../"))
-sys.path.append("/home/bob/Development/GitHub/kmmax/MBTools")
+sys.path.append(os.path.join(sys.path[0], "../"))
 
 from PyQt5 import QtWidgets
 
