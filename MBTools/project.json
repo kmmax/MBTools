@@ -1,0 +1,50 @@
+{
+    "driver": "modbus1",
+    "prpperty": null,
+    "devices": {
+        "device1": {
+            "property": {
+                "ip": "10.18.32.78",
+                "port": 10502
+            },
+            "ranges": {
+                "range1": {
+                    "property": {
+                        "adddress": 0,
+                        "quantity": 10,
+                        "comment": null
+                    }
+                },
+                "range2": {
+                    "property": {
+                        "adddress": 0,
+                        "quantity": 10,
+                        "comment": null
+                    }
+                }
+            }
+        },
+        "device2": {
+            "property": {
+                "ip": "10.18.32.78",
+                "port": 10502
+            },
+            "ranges": {
+                "range1": {
+                    "property": {
+                        "adddress": 0,
+                        "quantity": 10,
+                        "comment": null
+                    }
+                },
+                "range2": {
+                    "property": {
+                        "adddress": 0,
+                        "quantity": 10,
+                        "comment": null
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,11 @@
+<RCC>
+  <qresource prefix="img">
+    <file>img/OpenFolder.png</file>
+    <file>img/checkmark_off.png</file>
+    <file>img/add.png</file>
+    <file>img/checkmark.png</file>
+    <file>img/close.png</file>
+    <file>img/minus.png</file>
+    <file>img/tools.png</file>
+  </qresource>
+</RCC>

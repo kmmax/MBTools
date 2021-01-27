@@ -1,0 +1,49 @@
+
+QHeaderView {
+    background-color: #fff;
+    font-size:13px;
+}
+QHeaderView::section:horizontal {
+    color: #fff;
+    border-style: solid;
+    background-color: qlineargradient( x1: 0, y1: 0, x2: 0, y2: 1,
+                                        stop: 0 #4287ff, stop: 1 #356ccc);
+ }
+QTableView {
+    border: 2px solid #3873d9;
+    border-top-color: #4287ff;
+    border-radius: 4px;
+    background-color: #fff;
+    /*background-image: url(:/img/other/background.png);*/
+    gridline-color: #777;
+    /*selection-background-color: #ccdfff;*/
+    color:#333;
+    font-size:12px;
+ }
+
+/*TreeView*/
+QTreeView {
+    border: 2px solid #3873d9;
+    border-top-color: #4287ff;
+    border-radius: 4px;
+    background-color: #fff;
+    gridline-color: #777;
+    color:#333;
+    font-size:12px;
+ }
+
+/* Buttons */
+QPushButton {
+    padding:4px;
+    color: #fff;
+    font-size: 14px;
+    border-radius: 2px;
+    border: 1px solid #3873d9;
+    background-color: qlineargradient( x1: 0, y1: 0, x2: 0, y2: 1,
+                                        stop: 0 #4287ff, stop: 1 #356ccc);
+ }
+QPushButton:pressed {
+    color: #111;
+    border: 1px solid #3873d9;
+    background: #fff;
+ }

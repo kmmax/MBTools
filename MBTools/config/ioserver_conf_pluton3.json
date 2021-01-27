@@ -1,0 +1,61 @@
+{
+  "devices": [
+    { "name": "dev1", "protocol": "modbus", "ip": "10.18.32.78", "port": 11502 },
+    { "name": "dev2", "protocol": "modbus", "ip": "10.18.32.78", "port": 12502 }
+  ],
+
+  "tags": [
+    {"name": "GROUP2.CM", "type": "UINT", "device": "dev1", "address": 2607, "comment": "GROUP2: CM" },
+    {"name": "GROUP2.CM2", "type": "UINT", "device": "dev1", "address": 2608, "comment": "GROUP2: CM2" },
+    {"name": "GROUP2.SV", "type": "REAL", "device": "dev1", "address": 2609, "comment" : "GROUP2: SV" },
+    {"name": "GROUP2.SP", "type": "REAL", "device": "dev1", "address": 2611, "comment" : "GROUP2: SP" },
+    {"name": "GROUP2.Kp", "type": "REAL", "device": "dev1", "address": 2613, "comment" : "GROUP2: Kp" },
+    {"name": "GROUP2.Ki", "type": "REAL", "device": "dev1", "address": 2615, "comment" : "GROUP2: Ki" },
+    {"name": "GROUP2.Kd", "type": "REAL", "device": "dev1", "address": 2617, "comment" : "GROUP2: Kd" },
+    {"name": "GROUP2.PV", "type": "REAL", "device": "dev1", "address": 2619, "comment" : "GROUP2: PV" },
+    {"name": "GROUP2.ST1", "type": "UINT", "device": "dev1", "address": 2621, "comment": "GROUP2: ST1" },
+    {"name": "GROUP2.IM", "type": "UINT", "device": "dev1", "address": 2622, "comment": "GROUP2: IM" },
+    {"name": "GROUP2.CS", "type": "WORD", "device": "dev1", "address": 2623, "comment": "GROUP2: CS" },
+    {"name": "GROUP2.NR1", "type": "WORD", "device": "dev1", "address": 2624, "comment": "GROUP2: NR1" },
+    {"name": "GROUP2.NR2", "type": "WORD", "device": "dev1", "address": 2625, "comment": "GROUP2: NR2" },
+    {"name": "GROUP2.US1", "type": "WORD", "device": "dev1", "address": 2626, "comment": "GROUP2: US1" },
+    {"name": "GROUP2.FU1", "type": "UINT", "device": "dev1", "address": 2627, "comment": "GROUP2: FU1" },
+    {"name": "GROUP2.FU2", "type": "UINT", "device": "dev1", "address": 2628, "comment": "GROUP2: FU2" },
+
+    { "name": "M1T1PL02VN00010.CM", "type": "UINT", "device": "dev1", "address": 2119, "comment": "Valve1: Команда"},
+    { "name": "M1T1PL02VN00010.CM2", "type": "UINT", "device": "dev1", "address": 2120, "comment": "Valve1: Status" },
+    { "name": "M1T1PL02VN00010.SV", "type": "REAL", "device": "dev1", "address": 2121, "comment": "Valve1: Mode" },
+    { "name": "M1T1PL02VN00010.SP", "type": "REAL", "device": "dev1", "address": 2123, "comment": "Valve1: Alarms" },
+    { "name": "M1T1PL02VN00010.Kp", "type": "REAL", "device": "dev1", "address": 2125, "comment": "Valve1: Warnings" },
+    { "name": "M1T1PL02VN00010.Ki", "type": "REAL", "device": "dev1", "address": 2127, "comment": "Valve1: Accessed control" },
+    { "name": "M1T1PL02VN00010.Kd", "type": "REAL", "device": "dev1", "address": 2129, "comment": "Valve1: No ready to OPEN" },
+    { "name": "M1T1PL02VN00010.PV", "type": "REAL", "device": "dev1", "address": 2131, "comment": "Valve1: No ready to CLOSE" },
+    { "name": "M1T1PL02VN00010.VL", "type": "REAL", "device": "dev1", "address": 2133, "comment": "PT245: Value" },
+    { "name": "M1T1PL02VN00010.ST1", "type": "UINT", "device": "dev1", "address": 2135, "comment": "PT245: Value" },
+    { "name": "M1T1PL02VN00010.RG", "type": "UINT", "device": "dev1", "address": 2136, "comment": "PT245: Value" },
+    { "name": "M1T1PL02VN00010.AM", "type": "WORD", "device": "dev1", "address": 2137, "comment": "PT245: Value" },
+    { "name": "M1T1PL02VN00010.WM", "type": "WORD", "device": "dev1", "address": 2138, "comment": "PT245: Value" },
+    { "name": "M1T1PL02VN00010.ID", "type": "UINT", "device": "dev1", "address": 2139, "comment": "PT245: Value" },
+
+    { "name": "M1T1PL02VN00020.CM", "type": "UINT", "device": "dev1", "address": 2140, "comment": "Valve1: Команда"},
+    { "name": "M1T1PL02VN00020.CM2", "type": "UINT", "device": "dev1", "address": 2141, "comment": "Valve1: Status" },
+    { "name": "M1T1PL02VN00020.SV", "type": "REAL", "device": "dev1", "address": 2142, "comment": "Valve1: Mode" },
+    { "name": "M1T1PL02VN00020.SP", "type": "REAL", "device": "dev1", "address": 2144, "comment": "Valve1: Alarms" },
+    { "name": "M1T1PL02VN00020.Kp", "type": "REAL", "device": "dev1", "address": 2146, "comment": "Valve1: Warnings" },
+    { "name": "M1T1PL02VN00020.Ki", "type": "REAL", "device": "dev1", "address": 2148, "comment": "Valve1: Accessed control" },
+    { "name": "M1T1PL02VN00020.Kd", "type": "REAL", "device": "dev1", "address": 2150, "comment": "Valve1: No ready to OPEN" },
+    { "name": "M1T1PL02VN00020.PV", "type": "REAL", "device": "dev1", "address": 2152, "comment": "Valve1: No ready to CLOSE" },
+    { "name": "M1T1PL02VN00020.VL", "type": "REAL", "device": "dev1", "address": 2154, "comment": "PT245: Value" },
+    { "name": "M1T1PL02VN00020.ST1", "type": "UINT", "device": "dev1", "address": 2156, "comment": "PT245: Value" },
+    { "name": "M1T1PL02VN00020.RG", "type": "WORD", "device": "dev1", "address": 2157, "comment": "PT245: Value" },
+    { "name": "M1T1PL02VN00020.AM", "type": "WORD", "device": "dev1", "address": 2158, "comment": "PT245: Value" },
+    { "name": "M1T1PL02VN00020.WM", "type": "UINT", "device": "dev1", "address": 2159, "comment": "PT245: Value" },
+    { "name": "M1T1PL02VN00020.ID", "type": "UINT", "device": "dev1", "address": 2160, "comment": "PT245: Value" },
+
+    {"name": "ValveK215.ST1", "type": "UINT", "device": "dev1", "address": 1591, "comment": "K215: ST1" },
+    {"name": "ValveK215.RG", "type": "UINT", "device": "dev1", "address": 1592, "comment": "K215: RG" },
+    {"name": "ValveK215.AM1", "type": "WORD", "device": "dev1", "address": 1593, "comment": "K215: AM1" },
+
+    {"name": "TAG1.DEV2", "type": "WORD", "device": "dev2", "address": 110, "comment": "Test tag1 for device2" }
+  ]
+}

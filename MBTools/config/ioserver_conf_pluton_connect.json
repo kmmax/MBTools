@@ -1,0 +1,42 @@
+{
+  "devices": [
+    { "name": "dev1", "protocol": "modbus", "ip": "10.18.32.78", "port": 11502 },
+    { "name": "dev2", "protocol": "modbus", "ip": "10.18.32.78", "port": 12502 },
+    { "name": "deb1", "protocol": "modbus", "ip": "10.18.32.78", "port": 10502 },
+    { "name": "hmi2", "protocol": "modbus", "ip": "10.18.32.78", "port": 20502 }
+  ],
+
+  "tags": [
+    {"name": "GROUP2.US1", "type": "WORD", "device": "dev1", "address": 2626, "comment": "GROUP2: US1" },
+    {"name": "GROUP2.FU1", "type": "UINT", "device": "dev1", "address": 2627, "comment": "GROUP2: FU1" },
+    {"name": "GROUP2.FU2", "type": "UINT", "device": "dev1", "address": 2628, "comment": "GROUP2: FU2" },
+
+    {"name": "TAG1.DEV2", "type": "WORD", "device": "dev2", "address": 110, "comment": "Test tag1 for device2" },
+
+    {"name": "PV", "type": "REAL", "device": "deb1", "address": 2619, "comment" : "GROUP2: PV" },
+
+    {"name": "M1T1PL02AL00020.CM",  "type": "INT", "device": "hmi2", "address": 2607, "comment" : "M1T1PL02AL00020_CMDI" },
+    {"name": "M1T1PL02AL00020.CM2", "type": "INT", "device": "hmi2", "address": 2608, "comment" : "M1T1PL02AL00020_RSS" },
+    {"name": "M1T1PL02AL00020.SV", "type": "REAL", "device": "hmi2", "address": 2609, "comment" : "M1T1PL02AL00020_RFRQ" },
+    {"name": "M1T1PL02AL00020.SP", "type": "REAL", "device": "hmi2", "address": 2611, "comment" : "M1T1PL02AL00020_RSP" },
+    {"name": "M1T1PL02AL00020.Kp", "type": "REAL", "device": "hmi2", "address": 2613, "comment" : "M1T1PL02AL00020_RPC" },
+    {"name": "M1T1PL02AL00020.Ki", "type": "REAL", "device": "hmi2", "address": 2615, "comment" : "M1T1PL02AL00020_RIC" },
+    {"name": "M1T1PL02AL00020.Kd", "type": "REAL", "device": "hmi2", "address": 2617, "comment" : "M1T1PL02AL00020_RDC" },
+    {"name": "M1T1PL02AL00020.TM1", "type": "INT", "device": "hmi2", "address": 2619, "comment" : "M1T1PL02AL00020_MES" },
+    {"name": "M1T1PL02AL00020.PV", "type": "REAL", "device": "hmi2", "address": 2620, "comment" : "M1T1PL02AL00020_PV" },
+    {"name": "M1T1PL02AL00020.ST1", "type": "INT", "device": "hmi2", "address": 2622, "comment" : "M1T1PL02AL00020_STI" },
+    {"name": "M1T1PL02AL00020.IM", "type": "INT", "device": "hmi2", "address": 2623, "comment" : "M1T1PL02AL00020_INF" },
+    {"name": "M1T1PL02AL00020.CS", "type": "WORD", "device": "hmi2", "address": 2624, "comment" : "M1T1PL02AL00020_CS" },
+    {"name": "M1T1PL02AL00020.US1", "type": "INT", "device": "hmi2", "address": 2625, "comment" : "M1T1PL02AL00020_AVRST" },
+    {"name": "M1T1PL02AL00020.FU1", "type": "INT", "device": "hmi2", "address": 2626, "comment" : "M1T1PL02AL00020_VN1SA" },
+    {"name": "M1T1PL02AL00020.FU2", "type": "INT", "device": "hmi2", "address": 2627, "comment" : "M1T1PL02AL00020_VN2SA" },
+    {"name": "M1T1PL02AL00020.WM", "type": "WORD", "device": "hmi2", "address": 2628, "comment" : "M1T1PL02AL00020_WM" },
+	
+	{"name": "CONTROL", "type": "INT", "device": "deb1", "address": 35, "comment" : "HMI Control" },
+    {"name": "HMI1.CON", "type": "INT", "device": "deb1", "address": 27, "comment" : "HMI1 Connect" },
+    {"name": "HMI2.CON", "type": "INT", "device": "deb1", "address": 28, "comment" : "HMI2 Connect" },
+    {"name": "HMI1.TIMER", "type": "REAL", "device": "deb1", "address": 37, "comment" : "GROUP2: PV" },
+    {"name": "HMI2.TIMER", "type": "REAL", "device": "deb1", "address": 39, "comment" : "GROUP2: PV" },
+    {"name": "Timer3", "type": "REAL", "device": "deb1", "address": 41, "comment" : "GROUP2: PV" }
+  ]
+}
