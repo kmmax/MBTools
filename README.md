@@ -1,4 +1,4 @@
-###MDViewer
+### MDViewer
 ___
 
 GUI Python application for reading and displaying modbus data from several sources.
@@ -22,7 +22,7 @@ Tools:
 ![](doc/screens/screen3.png)
 
 ___
-###How to create virtual environment
+### How to create virtual environment
 **Windows**
 ~~~bash
 $ python -m venv env
@@ -40,7 +40,7 @@ $ source env/bin/activate
 (env)$ deactivate
 ~~~
 ___
-###Packaging
+### Packaging
 **Windows**
 ~~~bash
 $ source env/Scripts/activate
