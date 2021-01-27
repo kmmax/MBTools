@@ -1,17 +1,14 @@
 # -*- coding: utf-8 -*-
-import sys
 import os
+import sys
+# sys.path.append(os.path.join(sys.path[0], "../"))
+sys.path.append("/home/bob/Development/GitHub/kmmax/MBTools")
 
-from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtWidgets import QApplication
-
-from MBTools.utilites.Messages import ValueViewer
-from MBTools.pluton.Fans import Fan
+from PyQt5 import QtWidgets
 
 
-from MBTools.oiserver.OIServer import IOServer
 import MBTools.oiserver.tools.OIServerViewer.OIServerViewer as oiv
-import MBTools.drivers.modbus.tools.ModbusDriverViewer.ModbusDriverViewer as drv
+from MBTools.oiserver.OIServer import IOServer
 
 
 def main(argv):
@@ -20,33 +17,16 @@ def main(argv):
     cur_path = os.path.dirname(__file__)
     new_path = os.path.relpath("../config/qss.css", cur_path)
     print(new_path)
+    print("sys path:")
+    for path in sys.path:
+        print("\t" + path)
+
 
     io = IOServer()
 
     oiviewer = oiv.OIServerViewer()
     oiviewer.setOiServer(io)
 
-    # mbdrv = io.driver()
-    # viewer = drv.ModbusDriverViewer()
-    # viewer.addDriver(mbdrv)
-
-    # value_viewer = ValueViewer()
-    # value_viewer.setTagName("M1T1PL02VN00020.Ki")
-    # value_viewer.setOiServer(io)
-    # value_viewer.show()
-
-    # viewer1 = Fan()
-    # viewer1.setTagName("M1T1PL02AL00020.ST1")
-    # viewer1.setOiServer(io)
-    # viewer1.show()
-
-    # value_viewer = Fan()
-    # value_viewer.setTagName("M1T1PL02AL00020.PV")
-    # value_viewer.setOiServer(io)
-    # value_viewer.show()
-
-    # viewer.move(100, 0)
-    # viewer.show()
     oiviewer.show()
 
     return app.exec()
