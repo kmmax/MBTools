@@ -28,7 +28,8 @@ ___
 $ python -m venv env
 $ source env/Scripts/activate
 (env)$ python -m pip install --upgrade pip
-(env)$ pip install PyQt5 pymodbus numpy pyinstaller
+(env)$ pip install -r requirements.txt
+#(env)$ pip install PyQt5 pymodbus numpy pyinstaller
 (env)$ deactivate
 ~~~
 **Linux**
@@ -36,7 +37,8 @@ $ source env/Scripts/activate
 $ python3 -m venv env
 $ source env/bin/activate
 (env)$ python -m pip install --upgrade pip
-(env)$ pip install PyQt5 pymodbus numpy pyinstaller
+(env)$ pip install -r requirements.txt
+#(env)$ pip install PyQt5 pymodbus numpy pyinstaller
 (env)$ deactivate
 ~~~
 ___
