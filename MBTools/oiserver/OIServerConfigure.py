@@ -1,5 +1,4 @@
 import json
-import sys
 
 from enum import Enum
 
@@ -8,6 +7,8 @@ from MBTools.drivers.modbus.ModbusDriver import *
 from MBTools.oiserver.constants import TagTypeFromStr
 
 from PyQt5 import QtWidgets, QtCore
+
+from abc import ABC, abstractmethod
 
 
 class DeviceConfig:
@@ -43,42 +44,68 @@ class TagConfig:
         )
 
 
-class Configurator:
+class Configurator(ABC):
     def __init__(self):
         self._tags_config = []
         self._devices_config = []
-        self._tags = []
-        self._devices = []
+        # self._tags = []
+        # self._devices = []
         self._valid = False        # has valid configuration
 
+    def is_valid(self):
+        return self._valid
+
+    @abstractmethod
     def read_config(self, file_name: str):
         """Returns (devices, lists) awerwise None"""
         pass
 
+    @abstractmethod
     def write_config(self, file: str):
-        pass
-
-    def get_devices(self):
-        pass
-
-    def get_tags(self):
         pass
 
     def clear(self):
         self._tags_config.clear()
         self._devices_config.clear()
-        self._tags.clear()
-        self._devices.clear()
+        # self._tags.clear()
+        # self._devices.clear()
         self._valid = False
+
+    def tags_config(self):
+        return self._tags_config
+
+    def devices_config(self):
+        return self._devices_config
+
+    def add_tag(self, tag: TagConfig):
+        self._tags_config.append(tag)
+        pass
+
+    def rem_tag(self, name: str):
+        pass
+
+    def add_device(self, dev: DeviceConfig):
+        self._devices_config.append(dev)
+
+    def rem_device(self, name: str):
+        pass
+
+    def __str__(self):
+        devs_str = "\n\t".join([str(dev) for dev in self._devices_config])
+        tags_str = "\n\t".join([str(tag) for tag in self._tags_config])
+        msg = "Valid: {}".format(self._valid)
+        msg += "\nDevices:"
+        msg += "\n\t" + devs_str
+        msg += "\n" + "Tags:"
+        msg += "\n\t" + tags_str
+
+        return msg
 
 
 class JsonConfigure(Configurator):
     def __init__(self):
         super().__init__()
         self.__data = None
-
-    def is_valid(self):
-        return self._valid
 
     def read_config(self, file_name: str):
         try:
@@ -115,13 +142,11 @@ class JsonConfigure(Configurator):
             return None
 
         self._valid = True
-        return self._devices, self._tags
+        return self._devices_config, self._tags_config
 
-    def tags_config(self):
-        return self._tags_config
-
-    def devices_config(self):
-        return self._devices_config
+    def write_config(self, file: str):
+        print("JsonConfigure.write_config: dummy")
+        pass
 
 
 class FormatName(Enum):
@@ -146,36 +171,22 @@ def create_config(name: FormatName, file: str):
 
 
 def main(argv):
-    app = QtWidgets.QApplication(sys.argv)
+    # app = QtWidgets.QApplication(sys.argv)
 
     VALID_FILE_NAME = "conf.json"
     INVALID_FILE_NAME = "conf1.json"
 
     conf = JsonConfigure()
 
-
-    print("step2")
-    res = conf.read_config(INVALID_FILE_NAME)
-    if res is not None:
-        devices_config = conf.devices_config()
-        tags_config = conf.tags_config()
-        print("devices:")
-        for device_conf in devices_config:
-            print('\t', device_conf)
-        print("tags:")
-        for tag_conf in tags_config:
-            print('\t', tag_conf)
-        print("OK")
-    else:
-        print("File isn't read")
-
-    print("config valid: {}".format(conf.is_valid()))
-
-    print("step1")
     res = conf.read_config(VALID_FILE_NAME)
-    print("config valid: {}".format(conf.is_valid()))
-    print("finish")
-    return app.exec()
+    new_dev = DeviceConfig("test", "modbus", ip="127.0.0.1", port=1502 )
+    new_tag = TagConfig("TAG_TEST", new_dev.name, 100, TagType.INT)
+    conf.add_device(new_dev)
+    conf.add_tag(new_tag)
+
+    print(conf)
+
+    # return app.exec()
 
 
 if __name__ == "__main__":
