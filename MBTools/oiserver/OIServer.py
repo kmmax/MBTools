@@ -5,7 +5,7 @@ import numpy as np
 from MBTools.oiserver.Tag import Tag, TagType, TagTypeSize
 from MBTools.drivers.modbus.ModbusDriver import Range, \
     DeviceCreator, DriverCreator, QualityEnum
-from MBTools.oiserver.OIServerConfigure import JsonConfigure
+from MBTools.oiserver.OIServerConfigure import JsonConfigure, create_config, FormatName
 
 lock = QtCore.QMutex()
 
@@ -13,12 +13,10 @@ lock = QtCore.QMutex()
 class IOServer(QtCore.QObject):
     dataChanged = QtCore.pyqtSignal()
 
-    def __init__(self, data=None, parent=None):
+    def __init__(self, data=None, conf=None, parent=None):
         super().__init__(parent)
 
-        # self.__conf = JsonConfigure()
-        # self.__conf.read_config("config/ioserver_conf_pluton_connect.json")
-        self.__conf = None
+        self.__conf = conf
 
         # Data
         self.__data = data
@@ -26,9 +24,12 @@ class IOServer(QtCore.QObject):
         self.__devices = []
         self.__tags = []
 
-        conf = JsonConfigure()
-        conf.read_config("config/conf.json")
-        self.set_config(conf)
+
+        # conf = create_config(FormatName.JSON, "config/conf.json")
+        # conf = JsonConfigure()
+        # conf.read_config("config/conf1.json")
+        # if conf:
+        #     self.set_config(conf)
 
     def clear_config(self):
 
@@ -46,6 +47,9 @@ class IOServer(QtCore.QObject):
         """Sets new tags set by using tag configuration"""
         if not conf:
             return None
+        if not conf.is_valid():
+            return None
+
         """1. Old configuration clearing"""
         self.clear_config()
 
@@ -97,7 +101,7 @@ class IOServer(QtCore.QObject):
         self.add_tags(tags)
 
     def config(self):
-        return self.__
+        return self.__conf
 
     def devices(self):
         return self.__devices
@@ -264,6 +268,12 @@ class IOServer(QtCore.QObject):
 
 def main(argv):
     app = QtWidgets.QApplication(sys.argv)
+
+    conf = create_config(FormatName.JSON, "conf.json")
+    if conf is None:
+        print("No config")
+
+    io = IOServer(conf=conf)
 
     return app.exec()
 

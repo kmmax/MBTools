@@ -1,30 +1,33 @@
 {
   "devices": [
-    { "name": "hmi1", "protocol": "modbus", "ip": "10.18.40.193", "port": 502 },
-    { "name": "modsim", "protocol": "modbus", "ip": "10.18.32.78", "port": 10502 }
+    { "name": "dev1", "protocol": "modbus", "ip": "127.0.0.1", "port": 30502 },
+    { "name": "dev2", "protocol": "modbus", "ip": "127.0.0.1", "port": 502 },
+    { "name": "dev3", "protocol": "modbus", "ip": "127.0.0.1", "port": 20502 }
   ],
 
   "tags": [
-    {"name": "M1T1PL02AL00020.PV", "type": "REAL", "device": "hmi1", "address": 1885, "comment" : "PT243: Value" },
-    {"name": "M1T1PL02AL00020.AM", "type": "WORD", "device": "hmi1", "address": 1887, "comment" : "PT243: Error" },
-    {"name": "M1T1PL02AL00020.WM1", "type": "BOOL", "device": "hmi1", "address": 1887, "bit": 1, "comment" : "PT243: RIO: no connection" },
-    {"name": "M1T1PL02AL00020.WM2", "type": "BOOL", "device": "hmi1", "address": 1887, "bit": 2, "comment" : "PT243: Overflow" },
-    {"name": "M1T1PL02AL00020.WM3", "type": "BOOL", "device": "hmi1", "address": 1887, "bit": 3, "comment" : "PT243: Shot circut" },
-    {"name": "M1T1PL02AL00020.WM4", "type": "BOOL", "device": "hmi1", "address": 1887, "bit": 4, "comment" : "PT243: Overflow or Shot circut" },
-    {"name": "M1T1PL02AL00020.WM6", "type": "BOOL", "device": "hmi1", "address": 1887, "bit": 6, "comment" : "PT243: Bad settings" },
-    {"name": "M1T1PL02AL00020.WM7", "type": "BOOL", "device": "hmi1", "address": 1887, "bit": 7, "comment" : "IO module error" },
-    {"name": "M1T1PL02AL00020.WM", "type": "WORD", "device": "hmi1", "address": 1888, "comment" : "PT243: Warning" },
-    {"name": "M1T1PL02AL00020.WM0", "type": "BOOL", "device": "hmi1", "address": 1888, "bit": 0, "comment" : "PT243: HH" },
-    {"name": "M1T1PL02AL00020.WM1", "type": "BOOL", "device": "hmi1", "address": 1888, "bit": 1, "comment" : "PT243: H" },
-    {"name": "M1T1PL02AL00020.WM2", "type": "BOOL", "device": "hmi1", "address": 1888, "bit": 2, "comment" : "PT243: L" },
-    {"name": "M1T1PL02AL00020.WM3", "type": "BOOL", "device": "hmi1", "address": 1888, "bit": 3, "comment" : "PT243: LL" },
-    {"name": "M1T1PL02AL00020.WM4", "type": "BOOL", "device": "hmi1", "address": 1888, "bit": 4, "comment" : "PT243: HH disabled" },
-    {"name": "M1T1PL02AL00020.WM5", "type": "BOOL", "device": "hmi1", "address": 1888, "bit": 5, "comment" : "PT243: H disabled" },
-    {"name": "M1T1PL02AL00020.WM6", "type": "BOOL", "device": "hmi1", "address": 1888, "bit": 6, "comment" : "PT243: L disabled" },
-    {"name": "M1T1PL02AL00020.WM7", "type": "BOOL", "device": "hmi1", "address": 1888, "bit": 7, "comment" : "PT243: LL disabled" },
+    {"name": "TAG1_REAL", "type": "REAL", "device": "dev1", "address": 100, "comment" : "Tag1 Real Type" },
+    {"name": "TAG1_WORD", "type": "WORD", "device": "dev1", "address": 102, "comment" : "Tag2 WORD Type" },
+    {"name": "TAG1_BOOL_0", "type": "BOOL", "device": "dev1", "address": 102, "bit": 0, "comment" : "Tag2 BOOL: bit0 from Tag2" },
+    {"name": "TAG1_BOOL_1", "type": "BOOL", "device": "dev1", "address": 102, "bit": 1, "comment" : "Tag2 BOOL: bit1 from Tag2" },
+    {"name": "TAG1_BOOL_2", "type": "BOOL", "device": "dev1", "address": 102, "bit": 2, "comment" : "Tag2 BOOL: bit2 from Tag2" },
+    {"name": "TAG1_BOOL_3", "type": "BOOL", "device": "dev1", "address": 102, "bit": 3, "comment" : "Tag2 BOOL: bit3 from Tag2" },
+    {"name": "TAG1_BOOL_4", "type": "BOOL", "device": "dev1", "address": 102, "bit": 4, "comment" : "Tag2 BOOL: bit4 from Tag2" },
+    {"name": "TAG1_BOOL_5", "type": "BOOL", "device": "dev1", "address": 102, "bit": 5, "comment" : "Tag2 BOOL: bit5 from Tag2" },
+    {"name": "TAG1_BOOL_6", "type": "BOOL", "device": "dev1", "address": 102, "bit": 6, "comment" : "Tag2 BOOL: bit6 from Tag2" },
+    {"name": "TAG1_BOOL_7", "type": "BOOL", "device": "dev1", "address": 102, "bit": 7, "comment" : "Tag2 BOOL: bit7 from Tag2" },
+    {"name": "TAG1_INT", "type": "INT", "device": "dev1", "address": 102, "comment" : "Tag2 INT: from Tag2" },
 
-    {"name": "Register1", "type": "INT", "device": "modsim", "address": 1, "comment" : "HMI2: INT Register" },
-    {"name": "Register1.1", "type": "REAL", "device": "modsim", "address": 1, "comment" : "HMI2: REAL Register " },
-    {"name": "Register1.2", "type": "REAL", "device": "modsim", "address": 1, "comment" : "HMI2: REAL Register1.2 " }
+    {"name": "TAG2_REAL", "type": "REAL", "device": "dev2", "address": 100, "comment" : "Tag1 Real Type" },
+    {"name": "TAG2_WORD", "type": "WORD", "device": "dev2", "address": 102, "comment" : "Tag2 WORD Type" },
+    {"name": "TAG2_BOOL_0", "type": "BOOL", "device": "dev2", "address": 102, "bit": 0, "comment" : "Tag2 BOOL: bit0 from Tag2" },
+    {"name": "TAG2_BOOL_1", "type": "BOOL", "device": "dev2", "address": 102, "bit": 1, "comment" : "Tag2 BOOL: bit1 from Tag2" },
+    {"name": "TAG2_BOOL_2", "type": "BOOL", "device": "dev2", "address": 102, "bit": 2, "comment" : "Tag2 BOOL: bit2 from Tag2" },
+    {"name": "TAG2_BOOL_3", "type": "BOOL", "device": "dev2", "address": 102, "bit": 3, "comment" : "Tag2 BOOL: bit3 from Tag2" },
+    {"name": "TAG2_BOOL_4", "type": "BOOL", "device": "dev2", "address": 102, "bit": 4, "comment" : "Tag2 BOOL: bit4 from Tag2" },
+    {"name": "TAG2_BOOL_5", "type": "BOOL", "device": "dev2", "address": 102, "bit": 5, "comment" : "Tag2 BOOL: bit5 from Tag2" },
+    {"name": "TAG2_BOOL_6", "type": "BOOL", "device": "dev2", "address": 102, "bit": 6, "comment" : "Tag2 BOOL: bit6 from Tag2" },
+    {"name": "TAG2_BOOL_7", "type": "BOOL", "device": "dev2", "address": 102, "bit": 7, "comment" : "Tag2 BOOL: bit7 from Tag2" },
+    {"name": "TAG2_INT", "type": "INT", "device": "dev2", "address": 102, "comment" : "Tag2 INT: from Tag2" }
   ]
 }

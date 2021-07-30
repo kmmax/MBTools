@@ -12,14 +12,11 @@ Requirements:
 Implemented modules:
 - Modbus driver (src/drivers/modbus);
 - OIServer (src/oiserver);
-- JSonServer (src/jsonserver) - not work;
-- Pluton (src/pluton) - same graphic for pluton
+- JSonServer (src/jsonserver) - not implemented ;
 
 Tools:
 - ModbusViewer - GUI application for observering modbus driver.
 ![](doc/screens/screen1.png)
-![](doc/screens/screen2.png)
-![](doc/screens/screen3.png)
 
 ___
 ### How to create virtual environment
@@ -71,9 +68,9 @@ $ cp -r MBTools/config/ dist/
 $ source env/bin/activate
 (env)$ pyinstaller --clean --onefile --noconsole --icon=myico.ico --name mdviewer MBTools/main.py
 (env)$ deactivate
-$ cp -r MBTools/config/ dist/
+$ cp -r MBTools/config/ dist/  # optionally
 ~~~
-To run application you need to have **config** folder with **conf.json** file wich located near executed file:
+Default configuration (**conf.json**) is located in **config** folder.:
 ~~~
 $ tree.exe
 .
@@ -88,11 +85,12 @@ $ tree.exe
 ~~~
 {
   "devices": [
-    { "name": "hmi2", "protocol": "modbus", "ip": "10.18.32.78", "port": 20502 }
+    { "name": "dev1", "protocol": "modbus", "ip": "127.0.0.1", "port": 502 }
   ],
 
   "tags": [
-    {"name": "M1T1PL02AL00020.PV", "type": "REAL", "device": "hmi2", "address": 2620, "comment" : "M1T1PL02AL00020_PV" }
+    {"name": "TAG1_REAL", "type": "REAL", "device": "dev1", "address": 100, "comment" : "Tag1 Real Type" },
+    {"name": "TAG1_WORD", "type": "WORD", "device": "dev1", "address": 102, "comment" : "Tag2 WORD Type" }
   ]
 }
 ~~~
@@ -123,19 +121,25 @@ $ source env/Scripts/activate
 ~~~python
 # -*- coding: utf-8 -*-
 import sys
-import os
 
-from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtWidgets import QApplication
+from PyQt5 import QtWidgets
 
 from MBTools.oiserver.OIServer import IOServer
+from MBTools.oiserver.OIServerConfigure import create_config, FormatName
 import MBTools.oiserver.tools.OIServerViewer.OIServerViewer as oiv
 
 
 def main(argv):
     app = QtWidgets.QApplication(sys.argv)
 
+    # Server
     io = IOServer()
+
+    # Server configuration
+    conf = create_config(FormatName.JSON, "../MBTools/config/conf.json")
+    io.set_config(conf)
+
+    # Server tag viewer
     oiviewer = oiv.OIServerViewer()
     oiviewer.setOiServer(io)
     oiviewer.show()

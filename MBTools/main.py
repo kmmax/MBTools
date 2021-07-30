@@ -5,9 +5,9 @@ sys.path.append(os.path.join(sys.path[0], "../"))
 
 from PyQt5 import QtWidgets
 
-
 import MBTools.oiserver.tools.OIServerViewer.OIServerViewer as oiv
 from MBTools.oiserver.OIServer import IOServer
+from MBTools.oiserver.OIServerConfigure import JsonConfigure, create_config, FormatName
 
 
 def main(argv):
@@ -20,8 +20,10 @@ def main(argv):
     for path in sys.path:
         print("\t" + path)
 
-
     io = IOServer()
+    # conf = create_config(FormatName.JSON, "config/conf.json")
+    conf = create_config(FormatName.JSON, "config/conf.json")
+    io.set_config(conf)
 
     oiviewer = oiv.OIServerViewer()
     oiviewer.setOiServer(io)
@@ -34,6 +36,3 @@ def main(argv):
 if "__main__" == __name__:
     sys.exit(main(sys.argv))
 
-# input = 0x3333
-# output = [int(x) for x in '{:08b}'.format(input)]
-# print(output)
