@@ -36,6 +36,6 @@ TagTypeSize = {
 }
 
 
-print(TagType["INT"], type(TagType["INT"]))
+# print(TagType["INT"], type(TagType["INT"]))
 my_enum = eval('TagType.UINT')
-print(my_enum, type(my_enum))
+# print(my_enum, type(my_enum))

@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
+import time
+
 from PyQt5 import QtWidgets, QtCore
 import sys
 from MBTools.oiserver.constants import TagType, TagTypeSize
-from MBTools.drivers.modbus.ModbusDriver import ModbusDriver, Device
+from MBTools.drivers.modbus.ModbusDriver import ModbusDriver, Device, DeviceCreator, QualityEnum, DriverCreator
 
 
 class Tag:
@@ -23,15 +25,15 @@ class Tag:
         self.__address = address
         self.__bit_number = bit_number
         self.__value = 0
-        self.__quality = "???"
+        self.__quality = QualityEnum.UNDEF
         self.__type = type_
         self.__comment = comment
         self.__time = None
         self.__device = device
-        print("{0}: Tag constructor".format(self.__name))
+        # print("{0}: Tag constructor".format(self.__name))
 
     @property
-    def device(self):
+    def device(self) -> Device:
         return self.__device
 
     @property
@@ -51,7 +53,7 @@ class Tag:
         return self.__bit_number
 
     @property
-    def quality(self):
+    def quality(self) -> QualityEnum:
         return self.__quality
 
     @property
@@ -59,7 +61,7 @@ class Tag:
         return self.__time
 
     @device.setter
-    def device(self, device):
+    def device(self, device: Device):
         self.__device = device
 
     @address.setter
@@ -75,7 +77,7 @@ class Tag:
         self.__value = value
 
     @quality.setter
-    def quality(self, quality):
+    def quality(self, quality: QualityEnum):
         self.__quality = quality
 
     @time.setter
@@ -125,7 +127,12 @@ class Tag:
 
 
 class TagList(list):
-    """ Class represents tag collection """
+    """
+    Class represents tag collection (for logical device control, for example Valve1)
+    - name - name of tags collection
+    - address - first address of tags collection
+    - type -  type of logical device (for example "Valve1")
+    """
     def __init__(self, name: str, address: int = 0, type=None):
         super().__init__()
         self._address = address
@@ -175,23 +182,27 @@ class TagList(list):
 
 
 def main(argv):
-    # app = QtWidgets.QApplication(sys.argv)
+    # devices
+    dev1 = DeviceCreator.create(name="dev1", ip="127.0.0.1", port=30502)
+    dev2 = DeviceCreator.create(name="dev2", ip="127.0.0.1", port=10502)
+    dev1.addRange(99, 20, "rng1")
+    dev1.addRange(199, 20, "rng2")
 
-    tag1 = Tag("CM", TagType.UINT, "Command")
-    tag2 = Tag("VL", TagType.REAL, "Current value")
-    tag3 = Tag("ST1", TagType.UINT, "State")
-    tag4 = Tag("AM", TagType.WORD, "Errors code")
-    tag5 = Tag("PR1", TagType.WORD, "Protection")
-    tags = TagList("G20K001SD001", 200, "Valve1")
-    tags.append(tag1)
-    tags.append(tag2)
-    tags.append(tag3)
-    tags.append(tag4)
-    tags.append(tag5)
-    tag1.value = 1024
-    print(tags)
+    # tags
+    tag1 = Tag(device=dev1, name="TAG1", type_=TagType.INT, address=100, comment="tag1 on dev1")
+    tag2 = Tag(device=dev1, name="TAG2", type_=TagType.INT, address=101, comment="tag2 on dev1")
+    tag3 = Tag(device=dev2, name="TAG3", type_=TagType.INT, address=100, comment="tag3 on dev2")
+    tag1.value = 11; tag1.quality = QualityEnum.UNDEF; tag1.time = time.localtime()
+    tag2.value = 12; tag2.quality = QualityEnum.UNDEF; tag2.time = time.localtime()
+    tag3.value = 13; tag3.quality = QualityEnum.UNDEF; tag3.time = time.localtime()
+    print(tag1)
+    print(tag2)
+    print(tag3)
 
-    # return app.exec()
+    devices = [dev1]
+    drv = DriverCreator.create(name="modbus", devices=devices)
+
+    dev1.start()
 
 
 if "__main__" == __name__:

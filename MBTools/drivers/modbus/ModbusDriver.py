@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+# import pymodbus.pdu
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import *
 from pymodbus.client.sync import ModbusTcpClient

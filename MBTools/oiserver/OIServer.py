@@ -12,6 +12,7 @@ lock = QtCore.QMutex()
 
 class IOServer(QtCore.QObject):
     dataChanged = QtCore.pyqtSignal()
+    configChanged = QtCore.pyqtSignal()
 
     def __init__(self, data=None, conf=None, parent=None):
         super().__init__(parent)
@@ -42,6 +43,7 @@ class IOServer(QtCore.QObject):
         self.__tags.clear()
 
         self.__drv = None
+        self.configChanged.emit()
 
     def set_config(self, conf: JsonConfigure):
         """Sets new tags set by using tag configuration"""
@@ -99,6 +101,8 @@ class IOServer(QtCore.QObject):
                         tag.bit_number = tag_cfg.bit_number
                     tags.append(tag)
         self.add_tags(tags)
+
+        self.configChanged.emit()
 
     def config(self):
         return self.__conf

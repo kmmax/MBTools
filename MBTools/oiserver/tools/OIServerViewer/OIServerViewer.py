@@ -4,7 +4,7 @@ import os
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QApplication, QStyledItemDelegate, QTableWidget, QDialog
 from PyQt5.QtGui import QColor, QPalette, QImage, QPixmap
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 
 # from MBTools.utilites.Messages import DummyMessage
 from MBTools.oiserver.OIServer import IOServer
@@ -14,7 +14,7 @@ import MBTools.drivers.modbus.tools.ModbusDriverViewer.ModbusDriverViewer as drv
 
 from MBTools.oiserver.tools.OIServerViewer.ui_OIServerViewer import Ui_OIServerViewer
 from MBTools.oiserver.Tag import Tag
-from MBTools.oiserver.constants import TagTypeFromStr
+from MBTools.oiserver.constants import TagTypeFromStr, StrFromTagType
 
 from MBTools.oiserver.tools.OIServerViewer.DlgAddTag import DlgAddTag
 from MBTools.oiserver.OIServerConfigure import JsonConfigure
@@ -24,10 +24,44 @@ from MBTools.utilites.Messages import DummyMessage
 lock = QtCore.QMutex()
 
 
-class ColorDelegate(QStyledItemDelegate):
-    """
-    This delegate makes one color for all row depending on value cell "Quality"
-    """
+class EditDelegate(QtWidgets.QItemDelegate):
+    editingStarted = pyqtSignal()
+    editingFinished = pyqtSignal()
+
+    def __init__(self, parent=None):
+        super(EditDelegate, self).__init__(parent)
+        self.__editor = None
+        self.__combo = None
+        self.__devices_names = []
+        self.__types_names = []
+
+    def set_devices_names(self, devices_names: list):
+        self.__devices_names = devices_names
+
+    def set_types_names(self, types_names: list):
+        self.__types_names = types_names
+
+    def createEditor(self, parent: QtWidgets.QWidget, option: 'QStyleOptionViewItem', index: QtCore.QModelIndex) -> QtWidgets.QWidget:
+        column = index.column()
+        if 1 == column:         # value
+            self.__editor = QtWidgets.QLineEdit(parent)
+            self.editingStarted.emit()
+            self.closeEditor.connect(self.onClosedEditor)
+            return self.__editor
+        elif 3 == column:       # devices
+            print(self.__devices_names)
+            self.__combo = QtWidgets.QComboBox(parent)
+            self.__combo.addItems(self.__devices_names)
+            return self.__combo
+        elif 5 == column:       # type
+            self.__combo = QtWidgets.QComboBox(parent)
+            self.__combo.addItems(self.__types_names)
+            return self.__combo
+
+    @QtCore.pyqtSlot()
+    def onClosedEditor(self):
+        print("Editing is finished")
+
     def paint(self, painter, option, index):
         QUALITY_COLUMN = 2 # Quality in 4 column
 
@@ -36,23 +70,10 @@ class ColorDelegate(QStyledItemDelegate):
         cond_index = model.index(row, QUALITY_COLUMN)   # index of cell "Quality"
 
         if cond_index.data() == 'GOOD':
-            # if 7 == index.column():
-            #     image = QImage("add.png")
-            #     pixmap = QPixmap.fromImage(image)
-            #     x = option.rect.center().x() - pixmap.rect().width() / 2
-            #     y = option.rect.top()
-            #     painter.drawPixmap(x, y, pixmap.scaled(option.rect.height() / 2, option.rect.height() / 2))
             option.palette.setColor(QPalette.Text, QColor("black"))
-            # option.palette.setColor(QPalette.Text, QColor("black"))
         else:
-            # if 7 == index.column():
-            #     image = QImage("info.png")
-            #     pixmap = QPixmap.fromImage(image)
-            #     x = option.rect.center().x() - pixmap.rect().width() / 2
-            #     y = option.rect.top()
-            #     painter.drawPixmap(x, y, pixmap.scaled(option.rect.height() / 2, option.rect.height() / 2))
             option.palette.setColor(QPalette.Text, QColor("red"))
-        QStyledItemDelegate.paint(self, painter, option, index)
+        QtWidgets.QItemDelegate.paint(self, painter, option, index)
 
 
 class OIServerViewer(QtWidgets.QMainWindow):
@@ -63,9 +84,11 @@ class OIServerViewer(QtWidgets.QMainWindow):
         self._ui = Ui_OIServerViewer()
         self._ui.setupUi(self)
         self._oi: IOServer = None
+        self.__edit_delegate = EditDelegate()
 
         # GUI
-        self._ui.tableWidget.setItemDelegate(ColorDelegate())
+        self._ui.tableWidget.setItemDelegate(self.__edit_delegate)
+
         self._ui.tableWidget.horizontalHeaderItem(0).setTextAlignment(Qt.AlignCenter)
         # self._ui.tableWidget.setColumnHidden(0, True)
 
@@ -105,11 +128,15 @@ class OIServerViewer(QtWidgets.QMainWindow):
         self._ui.tableWidget.customContextMenuRequested.connect(self.show_context_menu)
         self.__menu = QtWidgets.QMenu(self)
         action1 = self.__menu.addAction('Show as widget')
+        self.__menu.addSeparator()
         action2 = self.__menu.addAction('Copy')
+        action4 = self.__menu.addAction('Edit')
+        self.__menu.addSeparator()
         action3 = self.__menu.addAction('Delete')
         action1.triggered.connect(self.show_item)
-        action2.triggered.connect(lambda: QtWidgets.QMessageBox.information(self, 'Info', 'Hello!'))
-        action3.triggered.connect(lambda: QtWidgets.QMessageBox.information(self, 'Info', 'Hello!'))
+        action2.triggered.connect(lambda: QtWidgets.QMessageBox.information(self, 'Info', 'Copy Dummy'))
+        action3.triggered.connect(lambda: QtWidgets.QMessageBox.information(self, 'Info', 'Delete Dummy'))
+        action4.triggered.connect(lambda: QtWidgets.QMessageBox.information(self, 'Info', "Edit Dummy"))
 
     def show_item(self):
         """Shows value in separate window"""
@@ -140,6 +167,11 @@ class OIServerViewer(QtWidgets.QMainWindow):
         self._ui.actionClose.triggered.connect(lambda: DummyMessage().exec())
         self._ui.actionExit.triggered.connect(lambda: DummyMessage().exec())
 
+        # Table
+        header = self._ui.tableWidget.verticalHeader()
+        header.setDefaultSectionSize(10)
+        self._ui.tableWidget.setVerticalHeader(header)
+
     # ----- Menu actions -----
     def open_file(self):
         filename, ok = QtWidgets.QFileDialog.getOpenFileName(self, "Choose files", ".", "*.json")
@@ -156,13 +188,20 @@ class OIServerViewer(QtWidgets.QMainWindow):
         self.updateGui()
 
     def setOiServer(self, oi: IOServer):
+        if oi is None:
+            return None
         self._oi = oi
         self._oi.dataChanged.connect(self.onDataChanged)
+        self._oi.configChanged.connect(self.onConfigChanged)
+        self.onConfigChanged()
 
     @QtCore.pyqtSlot()
     def onDataChanged(self):
-        # print("OIServer: onDataChanged")
         self.updateGui()
+
+    @QtCore.pyqtSlot()
+    def onConfigChanged(self):
+        pass
 
     @QtCore.pyqtSlot()
     def onDriverViewerShow(self):
@@ -214,6 +253,12 @@ class OIServerViewer(QtWidgets.QMainWindow):
         # print("updateGui")
         if self._oi:
             # self._ui.tableWidget.clear()
+
+            # Update table delegate
+            types_names = StrFromTagType.values()
+            devices_names = [dev.name() for dev in self._oi.devices()]
+            self.__edit_delegate.set_devices_names(devices_names)
+            self.__edit_delegate.set_types_names(types_names)
 
             tags = self._oi.tags()
             if self.__flags.quality_filter:
