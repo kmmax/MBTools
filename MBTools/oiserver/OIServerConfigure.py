@@ -1,14 +1,32 @@
 import json
+import pprint
 
 from enum import Enum
 
 from MBTools.oiserver.Tag import Tag, TagType
 from MBTools.drivers.modbus.ModbusDriver import *
-from MBTools.oiserver.constants import TagTypeFromStr
+from MBTools.oiserver.constants import TagTypeFromStr, StrFromTagType
 
 from PyQt5 import QtWidgets, QtCore
 
 from abc import ABC, abstractmethod
+
+
+class DeviceAliases:
+     NAME = "name"
+     PROTOCOL = "protocol"
+     IP = "ip"
+     PORT = "port"
+     COMMENT = "comment"
+
+
+class TagAliases:
+    NAME = "name"
+    TYPE = "type"
+    DEVICE = "device"
+    ADDRESS = "address"
+    BIT = "bit"
+    COMMENT = "comment"
 
 
 class DeviceConfig:
@@ -47,7 +65,7 @@ class TagConfig:
 class Configurator(ABC):
     def __init__(self):
         self._tags_config = []
-        self._devices_config = []
+        self._devices_config: DeviceConfig = []
         # self._tags = []
         # self._devices = []
         self._valid = False        # has valid configuration
@@ -61,7 +79,15 @@ class Configurator(ABC):
         pass
 
     @abstractmethod
-    def write_config(self, file: str):
+    def write_config(self, file_name: str):
+        """ Writes tags configuration to file
+
+        :param[str] file_name - name of file for writing
+
+        :return[bool] - True - successful, otherwise - False
+
+        :raise IOError
+        """
         pass
 
     def clear(self):
@@ -115,37 +141,70 @@ class JsonConfigure(Configurator):
                 devs = self.__data["devices"]
                 # print(devs)
                 for dev in devs:
-                    dev_config = DeviceConfig(name=dev["name"],
-                                              protocol=dev["protocol"],
-                                              ip=dev["ip"],
-                                              port=dev["port"])
+                    dev_config = DeviceConfig(name=dev[DeviceAliases.NAME],
+                                              protocol=dev[DeviceAliases.PROTOCOL],
+                                              ip=dev[DeviceAliases.IP],
+                                              port=dev[DeviceAliases.PORT])
                     self._devices_config.append(dev_config)
 
                 tags = self.__data["tags"]
                 for tag in tags:
                     tag_type = None
-                    if tag["type"] in TagTypeFromStr:
-                        tag_type = TagTypeFromStr[tag["type"]]
+                    if tag[TagAliases.TYPE] in TagTypeFromStr:
+                        tag_type = TagTypeFromStr[tag[TagAliases.TYPE]]
                     else:
                         continue
-                    tag_config = TagConfig(name=tag["name"],
+                    tag_config = TagConfig(name=tag[TagAliases.NAME],
                                            type_=tag_type,
-                                           device_name=tag["device"],
-                                           address=tag["address"],
-                                           comment=tag["comment"])
+                                           device_name=tag[TagAliases.DEVICE],
+                                           address=tag[TagAliases.ADDRESS],
+                                           comment=tag[TagAliases.COMMENT])
                     if (TagType.BOOL == tag_type):
-                        bit_number = tag["bit"]
+                        bit_number = tag[TagAliases.BIT]
                         tag_config.set_bit(bit_number)
                     self._tags_config.append(tag_config)
         except IOError as ioe:
-            print("Error opening the file: ", ioe)
+            print("Error opening the file_name: ", ioe)
             return None
 
         self._valid = True
         return self._devices_config, self._tags_config
 
-    def write_config(self, file: str):
-        print("JsonConfigure.write_config: dummy")
+    def write_config(self, file_name: str):
+        try:
+            with open(file_name, 'w') as f:
+                data = {}
+                devices = []
+                for device_config in self._devices_config:
+                    device = {}
+                    device[DeviceAliases.NAME] = device_config.name
+                    device[DeviceAliases.PROTOCOL] = device_config.protocol
+                    device[DeviceAliases.IP] = device_config.ip
+                    device[DeviceAliases.PORT] = device_config.port
+
+                    devices.append(device)
+
+                    data["devices"] = devices
+
+                tags = []
+                for tag_config in self._tags_config:
+                    tag = {}
+                    tag[TagAliases.NAME] = tag_config.name
+                    tag[TagAliases.TYPE] = StrFromTagType[tag_config.type]
+                    tag[TagAliases.DEVICE] = tag_config.device_name
+                    tag[TagAliases.ADDRESS] = tag_config.address
+                    if TagType.BOOL == tag_config.type:
+                        tag[TagAliases.BIT] = tag_config.bit_number
+                    tag[TagAliases.COMMENT] = tag_config.comment
+
+                    tags.append(tag)
+
+                    data["tags"] = tags
+
+                json.dump(data, f, indent=4, ensure_ascii=False)
+
+        except IOError as ioe:
+            print("Error opening the file_name: ", ioe)
         pass
 
 
@@ -157,7 +216,7 @@ def create_config(name: FormatName, file: str):
     """
     Configurators factory:
         name:       format name (list of names: FormatName)
-        file:       file wich contains configuration
+        file_name:       file_name wich contains configuration
         returns:    config object, otherwise - None
     """
     # JSON
@@ -170,11 +229,20 @@ def create_config(name: FormatName, file: str):
             return None
 
 
+def temp():
+    print(TagAliases.NAME)
+
+
 def main(argv):
+    temp()
+
+
+
     # app = QtWidgets.QApplication(sys.argv)
 
     VALID_FILE_NAME = "conf.json"
     INVALID_FILE_NAME = "conf1.json"
+    TEST_FILE_NAME = "write_conf.json"
 
     conf = JsonConfigure()
 
@@ -185,6 +253,8 @@ def main(argv):
     conf.add_tag(new_tag)
 
     print(conf)
+
+    conf.write_config("write_conf.json")
 
     # return app.exec()
 
