@@ -197,6 +197,7 @@ class Device(QObject, AbstractModbus):
         self.__ranges = []       # ranges of modbus registers (separated requists)
         self.__ip = ip           # ip address of modbus server
         self.__port = port       # port of modbus server
+        self.__driver = None
 
         # For using on writing commangs
         self.__writeAddr = 0
@@ -330,6 +331,11 @@ class Device(QObject, AbstractModbus):
     def readRegisters(self, addr, num):
         pass
 
+    def setDriver(self, driver):
+        self.__driver = driver
+
+    def driver(self):
+        return self.__driver
 
 class ModbusDriver(QObject, AbstractModbus):
     dataChanged = pyqtSignal(str, Range)
