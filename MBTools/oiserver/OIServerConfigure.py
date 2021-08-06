@@ -1,26 +1,40 @@
-import json
-import pprint
+# -----------------------------------------------------------
+# This module contains tools of server configuration
+#
+# (C) 2021 Maxim Kozyakov, Voronezh, Russia
+# Released under GNU Public License (MIT)
+# email kmmax@yandex.ru
+# -----------------------------------------------------------
 
+import json
 from enum import Enum
+from typing import Final
 
 from MBTools.oiserver.Tag import Tag, TagType
 from MBTools.drivers.modbus.ModbusDriver import *
 from MBTools.oiserver.constants import TagTypeFromStr, StrFromTagType
 
-from PyQt5 import QtWidgets, QtCore
-
 from abc import ABC, abstractmethod
 
 
-class DeviceAliases:
-     NAME = "name"
-     PROTOCOL = "protocol"
-     IP = "ip"
-     PORT = "port"
-     COMMENT = "comment"
+# ------------ CONSTANTS BEGIN ------------------
+# This constants defines names of parameters in json config file
+
+DEVICE_BLOCK_ALIASE: Final = "devices"
+TAG_BLOCK_ALIASE: Final = "tags"
 
 
-class TagAliases:
+class DEVICE_ALIASES:
+    """ Constants. Aliases for fields json config file which describes DEVICE """
+    NAME = "name"
+    PROTOCOL = "protocol"
+    IP = "ip"
+    PORT = "port"
+    COMMENT = "comment"
+
+
+class TAG_ALIASES:
+    """ Constants. Aliases for fields json config file which describes TAG """
     NAME = "name"
     TYPE = "type"
     DEVICE = "device"
@@ -28,8 +42,11 @@ class TagAliases:
     BIT = "bit"
     COMMENT = "comment"
 
+# ------------ CONSTANTS END ------------------
+
 
 class DeviceConfig:
+    """ Container which contains device configuration """
     def __init__(self, name: str, protocol: str, ip: str, port: int, comment=''):
         self.name = name
         self.protocol = protocol
@@ -44,6 +61,7 @@ class DeviceConfig:
 
 
 class TagConfig:
+    """ Container which contains tag configuration """
     def __init__(self, name: str, device_name: str, address: int, type_: TagType, comment='', bit_number=None):
         self.name = name
         self.device_name = device_name
@@ -63,6 +81,9 @@ class TagConfig:
 
 
 class Configurator(ABC):
+    """
+    Class which provides configure of tags and devices list
+    """
     def __init__(self):
         self._tags_config = []
         self._devices_config: DeviceConfig = []
@@ -91,6 +112,7 @@ class Configurator(ABC):
         pass
 
     def clear(self):
+        """ Clears all configuration """
         self._tags_config.clear()
         self._devices_config.clear()
         # self._tags.clear()
@@ -98,22 +120,27 @@ class Configurator(ABC):
         self._valid = False
 
     def tags_config(self):
+        """ Returns current tags configuration """
         return self._tags_config
 
     def devices_config(self):
+        """ Returns current devices configuration """
         return self._devices_config
 
     def add_tag(self, tag: TagConfig):
+        """ Adds new tag in tag list """
         self._tags_config.append(tag)
-        pass
 
     def rem_tag(self, name: str):
+        """ Removes tag by name """
         pass
 
     def add_device(self, dev: DeviceConfig):
+        """ Adds new device in devices list """
         self._devices_config.append(dev)
 
     def rem_device(self, name: str):
+        """ Removes device by name """
         pass
 
     def __str__(self):
@@ -129,6 +156,9 @@ class Configurator(ABC):
 
 
 class JsonConfigure(Configurator):
+    """
+    Configurator which works with JSON format
+    """
     def __init__(self):
         super().__init__()
         self.__data = None
@@ -138,29 +168,29 @@ class JsonConfigure(Configurator):
             with open(file_name, 'r') as f:
                 self.__data = json.load(f)
                 self.clear()
-                devs = self.__data["devices"]
+                devs = self.__data[DEVICE_BLOCK_ALIASE]
                 # print(devs)
                 for dev in devs:
-                    dev_config = DeviceConfig(name=dev[DeviceAliases.NAME],
-                                              protocol=dev[DeviceAliases.PROTOCOL],
-                                              ip=dev[DeviceAliases.IP],
-                                              port=dev[DeviceAliases.PORT])
+                    dev_config = DeviceConfig(name=dev[DEVICE_ALIASES.NAME],
+                                              protocol=dev[DEVICE_ALIASES.PROTOCOL],
+                                              ip=dev[DEVICE_ALIASES.IP],
+                                              port=dev[DEVICE_ALIASES.PORT])
                     self._devices_config.append(dev_config)
 
-                tags = self.__data["tags"]
+                tags = self.__data[TAG_BLOCK_ALIASE]
                 for tag in tags:
                     tag_type = None
-                    if tag[TagAliases.TYPE] in TagTypeFromStr:
-                        tag_type = TagTypeFromStr[tag[TagAliases.TYPE]]
+                    if tag[TAG_ALIASES.TYPE] in TagTypeFromStr:
+                        tag_type = TagTypeFromStr[tag[TAG_ALIASES.TYPE]]
                     else:
                         continue
-                    tag_config = TagConfig(name=tag[TagAliases.NAME],
+                    tag_config = TagConfig(name=tag[TAG_ALIASES.NAME],
                                            type_=tag_type,
-                                           device_name=tag[TagAliases.DEVICE],
-                                           address=tag[TagAliases.ADDRESS],
-                                           comment=tag[TagAliases.COMMENT])
+                                           device_name=tag[TAG_ALIASES.DEVICE],
+                                           address=tag[TAG_ALIASES.ADDRESS],
+                                           comment=tag[TAG_ALIASES.COMMENT])
                     if (TagType.BOOL == tag_type):
-                        bit_number = tag[TagAliases.BIT]
+                        bit_number = tag[TAG_ALIASES.BIT]
                         tag_config.set_bit(bit_number)
                     self._tags_config.append(tag_config)
         except IOError as ioe:
@@ -177,29 +207,29 @@ class JsonConfigure(Configurator):
                 devices = []
                 for device_config in self._devices_config:
                     device = {}
-                    device[DeviceAliases.NAME] = device_config.name
-                    device[DeviceAliases.PROTOCOL] = device_config.protocol
-                    device[DeviceAliases.IP] = device_config.ip
-                    device[DeviceAliases.PORT] = device_config.port
+                    device[DEVICE_ALIASES.NAME] = device_config.name
+                    device[DEVICE_ALIASES.PROTOCOL] = device_config.protocol
+                    device[DEVICE_ALIASES.IP] = device_config.ip
+                    device[DEVICE_ALIASES.PORT] = device_config.port
 
                     devices.append(device)
 
-                    data["devices"] = devices
+                    data[DEVICE_BLOCK_ALIASE] = devices
 
                 tags = []
                 for tag_config in self._tags_config:
                     tag = {}
-                    tag[TagAliases.NAME] = tag_config.name
-                    tag[TagAliases.TYPE] = StrFromTagType[tag_config.type]
-                    tag[TagAliases.DEVICE] = tag_config.device_name
-                    tag[TagAliases.ADDRESS] = tag_config.address
+                    tag[TAG_ALIASES.NAME] = tag_config.name
+                    tag[TAG_ALIASES.TYPE] = StrFromTagType[tag_config.type]
+                    tag[TAG_ALIASES.DEVICE] = tag_config.device_name
+                    tag[TAG_ALIASES.ADDRESS] = tag_config.address
                     if TagType.BOOL == tag_config.type:
-                        tag[TagAliases.BIT] = tag_config.bit_number
-                    tag[TagAliases.COMMENT] = tag_config.comment
+                        tag[TAG_ALIASES.BIT] = tag_config.bit_number
+                    tag[TAG_ALIASES.COMMENT] = tag_config.comment
 
                     tags.append(tag)
 
-                    data["tags"] = tags
+                    data[TAG_BLOCK_ALIASE] = tags
 
                 json.dump(data, f, indent=4, ensure_ascii=False)
 
@@ -229,24 +259,15 @@ def create_config(name: FormatName, file: str):
             return None
 
 
-def temp():
-    print(TagAliases.NAME)
-
-
 def main(argv):
-    temp()
-
-
-
-    # app = QtWidgets.QApplication(sys.argv)
-
-    VALID_FILE_NAME = "conf.json"
-    INVALID_FILE_NAME = "conf1.json"
-    TEST_FILE_NAME = "write_conf.json"
+    READ_VALID_FILE_NAME = "conf.json"           # valid file for reading
+    READ_INVALID_FILE_NAME = "conf1.json"        # invalid file for reading
+    WRITE_FILE_NAME = "write_conf.json"      # file name for writing
 
     conf = JsonConfigure()
 
-    res = conf.read_config(VALID_FILE_NAME)
+    # Adding a tag is checked here
+    res = conf.read_config(READ_VALID_FILE_NAME)
     new_dev = DeviceConfig("test", "modbus", ip="127.0.0.1", port=1502 )
     new_tag = TagConfig("TAG_TEST", new_dev.name, 100, TagType.INT)
     conf.add_device(new_dev)
@@ -254,9 +275,8 @@ def main(argv):
 
     print(conf)
 
+    # Configuration saving is checked here
     conf.write_config("write_conf.json")
-
-    # return app.exec()
 
 
 if __name__ == "__main__":
