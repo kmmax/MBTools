@@ -23,7 +23,6 @@ class TestCalculator(unittest.TestCase):
 
     # @unittest.skip
     def test_devices(self):
-        # model = DataModel([])   # без [] не работает для нескольких тестов (если создаются объекты DataModel) разобраться!!!
         self.model.add(self.tag1)    # add dev1
         self.model.add(self.tag2)    # add dev2
         self.model.add(self.tag3)    # add dev3
@@ -53,8 +52,7 @@ class TestCalculator(unittest.TestCase):
     # @unittest.skip
     def test_find_by_name(self):
         name = self.dev1.name()
-        model = DataModel()
-        model.add(self.tag1)
+        self.model.add(self.tag1)
 
         # device exitsts
         dev_list = [self.dev1, self.dev2]
@@ -81,37 +79,36 @@ class TestCalculator(unittest.TestCase):
 
     # @unittest.skip("dummy")
     def test_discard(self):
-        model = DataModel([])   # без [] не работает для нескольких тестов (если создаются объекты DataModel) разобраться!!!
-        model.add(self.tag1)        # add dev1
-        model.add(self.tag2)        # add dev1
-        model.add(self.tag3)        # add dev2
-        model.discard(self.tag3)    # remove dev1
+        self.model.add(self.tag1)        # add dev1
+        self.model.add(self.tag2)        # add dev1
+        self.model.add(self.tag3)        # add dev2
+        self.model.discard(self.tag3)    # remove dev1
         # При удалении тега удаляется и связанный с ним device (если он больше никем не используется)
 
-        self.assertIn(self.tag1, model)         # есть tag2
-        self.assertIn(self.tag2, model)         # есть tag3
-        self.assertNotIn(self.tag3, model)      # нет tag1
-        self.assertEqual(2, len(model.tags()))  # осталось 2 элемента
+        self.assertIn(self.tag1, self.model)         # есть tag2
+        self.assertIn(self.tag2, self.model)         # есть tag3
+        self.assertNotIn(self.tag3, self.model)      # нет tag1
+        self.assertEqual(2, len(self.model.tags()))  # осталось 2 элемента
 
-        devices = model.devices()
+        devices = self.model.devices()
         self.assertIn(self.dev1, devices)
         self.assertNotIn(self.dev2, devices)
 
     # @unittest.skip
     def test_tags_by_device(self):
-        model = DataModel([])   # без [] не работает для нескольких тестов (если создаются объекты DataModel) разобраться!!!
-        model.add(self.tag1)        # add dev1
-        model.add(self.tag2)        # add dev1
-        model.add(self.tag3)        # add dev2
+        self.model.add(self.tag1)        # add dev1
+        self.model.add(self.tag2)        # add dev1
+        self.model.add(self.tag3)        # add dev2
 
         # в списке tag1, tag2 (привязанные к dev1), отсуствует tag3 (привязан к dev2)
-        tags = model.tags_by_device(self.dev1)
+        tags = self.model.tags_by_device(self.dev1)
         self.assertIn(self.tag1, tags)
         self.assertIn(self.tag2, tags)
         self.assertNotIn(self.tag3, tags)
 
     def test_find_tag_by_name(self):
         pass
+
 
 if __name__ == "__main__":
     unittest.main()
