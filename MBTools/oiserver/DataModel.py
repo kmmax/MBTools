@@ -1,8 +1,8 @@
 # -----------------------------------------------------------
 # This module contains Model of Data
-# - drivers
-# - devices
 # - tags
+# - devices (correspon
+# - drivers
 #
 # (C) 2021 Maxim Kozyakov, Voronezh, Russia
 # Released under GNU Public License (MIT)
@@ -17,40 +17,84 @@ from MBTools.oiserver.OIServerConfigure import JsonConfigure, DeviceConfig, TagC
 from MBTools.drivers.modbus.ModbusDriver import DriverCreator, DeviceCreator
 
 
-class DataModel(list):
+class DataModel(set):
     """
     Container for data. Contains: drivers, devices, tags
+    list overloaded methods:
+    - add(a)
+    - clear()
+    - discard(a)
+
+    @todo reload the remaining methods that change the content
     """
-    def __init__(self, drivers=[], devises=[], tags=[]):
-        self.__drivers = drivers
-        self.__devices = devises
+    def __init__(self, tags=[]):
         self.__tags = tags
+        self.__drivers = self.__get_drivers_from_tags()
+        self.__devices = self.__get_drivers_from_tags()
 
     def drivers(self):
-        pass
+        return self.__drivers
 
     def devices(self):
         return self.__devices
 
     def tags(self):
+        return self.__tags
+
+    def tags_by_device(self, device: Device) -> list:
+        """Returns tags corresponds with the device """
+        return [tag for tag in self.__tags if device.name() == tag.device.name()]
+
+    def find_tag_by_name(self, tagname: str) -> Tag:
         pass
 
-    def append(self, tag: Tag) -> None:
-        """ Overloaded: appends new tag """
-        assert Tag is not None, " None instead of Tag"
-        device: Device = tag.device
-        device_name = device.name()
-        # driver_name: ModbusDriver = tag.device.driver().name()
-        if DataModel.find_by_name(device_name, self.__devices) is None:
-            self.__devices.append(device)
-        # if DataModel.find_by_name(tag.name, self.__devices) is None:
-        #     self.__devices.append(device)
+    # ---------- overloaded ---------
+    def add(self, tag: Tag) -> None:
+        """Overloaded: set.add
 
-        super().append(tag)
+        1. Если тэг с таким именем уже существует, то действие игнорируется
+        2. Если отстутствует то тэг добавляется в существующий список тегов
+        """
+        assert Tag is not None, " None instead of Tag"
+
+        for tag_ in self.__tags:
+            if tag.name == tag_.name:
+                print("Tag {0} has had dublicate (it ins't added): tag.name={1}, tag_.name={2}".format(tag.name, tag.name, tag_.name))
+                return None
+
+        self.__tags.append(tag)
+        super().add(tag)
+        self.__devices = self.__get_devices_from_tags()
+        self.__drivers = self.__get_drivers_from_tags()
+        return None
+
+    def discard(self, tag: Tag) -> None:
+        """Overloaded: set.discard
+            - Удаляется тег с указанным именем
+            - обновляются списки devices и drivers
+        """
+        assert Tag is not None, " None instead of Tag"
+
+        for tag_ in self.__tags:
+            if tag.name == tag_.name:
+                super().discard(tag)
+                self.__tags.remove(tag_)
+                self.__devices = self.__get_devices_from_tags()
+                self.__drivers = self.__get_drivers_from_tags()
+                return None
+
+        print("Tag {} isn't present".format(tag.name))
+        return None
+
+    def clear(self) -> None:
+        super().clear()
+        self.__tags.clear()
+        self.__devices.clear()
+        self.__drivers.clear()
 
     @staticmethod
     def find_by_name(name: str, collection):
-        """Returns the first object from the iterable collection with the given name
+        """Returns the first object from the iterable collection with the given name (devices, drivers)
 
         object must have 'name()->str' method
         param[str] name - name of object
@@ -66,6 +110,30 @@ class DataModel(list):
 
         return ret_item
 
+    def __get_devices_from_tags(self) -> list:
+        """Returns devices which is used by all tags"""
+        devices = set()
+        for tag in self.__tags:
+            devices.add(tag.device)
+
+        return list(devices)
+
+    def __get_drivers_from_tags(self) -> list:
+        """Returns drivers which is used by all tags"""
+        drivers = set()
+        # devices = self.__get_devices_from_tags()
+        # for device in devices:
+        #     drivers.add(device.driver())
+
+        return list(drivers)
+
+    def __str__(self):
+        msg = "model:\n"
+        for tag in self.__tags:
+            msg += "\t" + str(tag) + "\n"
+
+        return msg
+
 
 def main(argv):
     print(argv)
@@ -73,18 +141,18 @@ def main(argv):
     dev1 = DeviceCreator.create("127.0.0.1", 502, "dev1")
     dev2 = DeviceCreator.create("127.0.0.1", 10502, "dev2")
     drv1 = DriverCreator.create("modbus", [dev1, dev2])
+
     tag1 = Tag(device=dev1, name="TAG1", type_=TagType.INT, address=100, comment="tag1 on dev1")
     tag2 = Tag(device=dev1, name="TAG2", type_=TagType.INT, address=101, comment="tag2 on dev1")
     tag3 = Tag(device=dev2, name="TAG3", type_=TagType.INT, address=100, comment="tag3 on dev2")
-    # print(tag1)
-    # print(tag2)
-    # print(tag3)
+    tag4 = Tag(device=dev2, name="TAG3", type_=TagType.INT, address=101, comment="tag3 on dev2")
+
     tags = []
     tags.append(tag1)
     tags.append(tag2)
     tags.append(tag3)
 
-    devices = [dev1, dev2]
+    # devices = [dev1, dev2]
 
     # dev = DataModel.find_by_name(name="dev3", collection=devices)
     # if dev is not None:
@@ -92,19 +160,35 @@ def main(argv):
     # else:
     #     print("No devices")
 
-    # time.sleep(2)
-    print("----------------")
+    time.sleep(1)
+    print("----- model ------")
 
     model = DataModel()
-    model.append(tag3)
-    model.append(tag1)
-    model.append(tag2)
+    model.add(tag3)
+    model.add(tag1)
+    model.add(tag2)
+    model.add(tag4)
+    print(model)
 
-    for item in model:
-        print(item, ": ", id(item.device))
+    # for item in model:
+    #     print(item, ": device id={}".format(id(item.device)))
+    # print("----- tags:")
+    # model_tags = model.tags()
+    # for t in model_tags:
+    #     print(t, ": ", id(t.device))
+    #
+    # print("----- devices:")
+    # for device in model.devices():
+    #     print(device.name(), ": ", id(device))
+    #
+    # print("=====")
+    # model.discard(tag3)
+    # for item in model:
+    #     print(item, ": device id={}".format(id(item.device)))
+    # print("-----")
+    # for device in model.devices():
+    #     print(device.name(), ": ", id(device))
 
-    for dev in model.devices():
-        print(dev.name(), ": ", id(dev))
 
     return 0
 
