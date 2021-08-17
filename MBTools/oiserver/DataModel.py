@@ -15,9 +15,43 @@ from MBTools.drivers.modbus.ModbusDriver import *
 from MBTools.oiserver.constants import TagTypeFromStr, StrFromTagType
 from MBTools.oiserver.OIServerConfigure import JsonConfigure, DeviceConfig, TagConfig
 from MBTools.drivers.modbus.ModbusDriver import DriverCreator, DeviceCreator
+from abc import ABC, abstractmethod
 
 
-class DataModel(set):
+class IDataModel(ABC):
+    """
+    Interface for data model
+    """
+    def __init__(self):
+        pass
+
+    @abstractmethod
+    def drivers(self) -> list:
+        """Returns all used drivers"""
+        pass
+
+    @abstractmethod
+    def devices(self) -> list:
+        """Returns all used devices"""
+        pass
+
+    @abstractmethod
+    def tags(self) -> list:
+        """Returns all tags"""
+        pass
+
+    @abstractmethod
+    def tags_by_device(self, device: Device) -> list:
+        """Returns the tags associated with this device """
+        pass
+
+    @abstractmethod
+    def find_tag_by_name(self, tagname: str) -> Tag:
+        """Finds and Returns tag by name. Returns a tag (if exists) by its name, otherwise None """
+        pass
+
+
+class DataModel(IDataModel, set):
     """
     Container for data. Contains: drivers, devices, tags
     list overloaded methods:
@@ -28,10 +62,12 @@ class DataModel(set):
     @todo reload the remaining methods that change the content
     """
     def __init__(self, tags=[]):
+        super().__init__()
         self.__tags = tags
         self.__drivers = self.__get_drivers_from_tags()
         self.__devices = self.__get_drivers_from_tags()
 
+    # ---------- IDataModel overloaded ---------
     def drivers(self):
         return self.__drivers
 
@@ -46,9 +82,16 @@ class DataModel(set):
         return [tag for tag in self.__tags if device.name() == tag.device.name()]
 
     def find_tag_by_name(self, tagname: str) -> Tag:
-        pass
+        """Returns tag by his name
 
-    # ---------- overloaded ---------
+        @todo
+        """
+        for tag in self.__tags:
+            if tag.name == tagname:
+                return tag
+        return None
+
+    # ---------- set overloaded ---------
     def add(self, tag: Tag) -> None:
         """Overloaded: set.add
 
@@ -135,6 +178,25 @@ class DataModel(set):
         return msg
 
 
+def find_tag_test(name: str):
+    print("testing start...")
+    dev1 = DeviceCreator.create("127.0.0.1", 502, "dev1")
+    model = DataModel()
+    tags = []
+    for i in range(10000):
+        tag = Tag(device=dev1, name="TAG{}".format(str(i)), type_=TagType.INT, address=100, comment="tag1 on dev1")
+        print(tag)
+        model.add(tag)
+
+    start_time = time.time()
+    for i in range(10):
+        my_tag = model.find_tag_by_name("TAG9999")
+    end_time = time.time()
+    print("my_tag: {}".format(my_tag))
+    duration = end_time - start_time
+    print("duration: {}".format(duration))
+
+
 def main(argv):
     print(argv)
 
@@ -189,6 +251,7 @@ def main(argv):
     # for device in model.devices():
     #     print(device.name(), ": ", id(device))
 
+    find_tag_test("TAG1")
 
     return 0
 
