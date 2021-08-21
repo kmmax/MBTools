@@ -1,7 +1,7 @@
 import sys
 import unittest
-from MDViewer.oiserver.OIServer import IOServer
-from MDViewer.oiserver.constants import TagTypeSize, TagType
+from MBTools.oiserver.OIServer import IOServer
+from MBTools.oiserver.constants import TagTypeSize, TagType
 
 
 class TestCalculator(unittest.TestCase):

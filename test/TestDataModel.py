@@ -114,6 +114,7 @@ class TestCalculator(unittest.TestCase):
         self.assertEqual(self.tag1, self.model.find_tag_by_name(self.tag1.name))
         self.assertEqual(self.tag2, self.model.find_tag_by_name(self.tag2.name))
         self.assertEqual(self.tag3, self.model.find_tag_by_name(self.tag3.name))
+        self.assertIsNone(self.model.find_tag_by_name(self.tag4.name))
 
 
 if __name__ == "__main__":
