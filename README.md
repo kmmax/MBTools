@@ -1,4 +1,4 @@
-### MDViewer
+### MBTools
 ___
 
 GUI Python application for reading and displaying modbus data from several sources.
