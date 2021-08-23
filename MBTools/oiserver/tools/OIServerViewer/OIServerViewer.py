@@ -8,6 +8,7 @@ from PyQt5.QtCore import Qt, pyqtSignal
 
 # from MBTools.utilites.Messages import DummyMessage
 from MBTools.oiserver.OIServer import IOServer
+from MBTools.oiserver.DataModel import DataModel
 from MBTools.oiserver.Tag import Tag, TagType
 from MBTools.drivers.modbus.ModbusDriver import QualityEnum
 import MBTools.drivers.modbus.tools.ModbusDriverViewer.ModbusDriverViewer as drv
@@ -85,6 +86,7 @@ class OIServerViewer(QtWidgets.QMainWindow):
         self._ui.setupUi(self)
         self._oi: IOServer = None
         self.__edit_delegate = EditDelegate()
+        self._model = DataModel()
 
         # GUI
         self._ui.tableWidget.setItemDelegate(self.__edit_delegate)
@@ -177,6 +179,7 @@ class OIServerViewer(QtWidgets.QMainWindow):
         filename, ok = QtWidgets.QFileDialog.getOpenFileName(self, "Choose files", ".", "*.json")
         conf = JsonConfigure()
         conf.read_config(filename)
+        # conf.read_model_config(filename)
         self._oi.set_config(conf)
         self.updateGui()
 

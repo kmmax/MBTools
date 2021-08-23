@@ -25,13 +25,6 @@ class IOServer(QtCore.QObject):
         self.__devices = []
         self.__tags = []
 
-
-        # conf = create_config(FormatName.JSON, "config/conf.json")
-        # conf = JsonConfigure()
-        # conf.read_config("config/conf1.json")
-        # if conf:
-        #     self.set_config(conf)
-
     def clear_config(self):
 
         # Удаляем устройства

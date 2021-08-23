@@ -76,7 +76,6 @@ class Tag:
     def value(self, value):
         self.__value = value
 
-    @quality.setter
     def quality(self, quality: QualityEnum):
         self.__quality = quality
 
@@ -115,7 +114,8 @@ class Tag:
         else:
             str_time = None
 
-        return "{0} : {1}, {2}[{3}], [{4}:{5} : {6}], {7}".format(
+        return "{0}.{1} ; {2}; {3}[{4}]; [{5}:{6} : {7}]; {8}".format(
+            self.__device.name(),
             self.__address,
             self.__name,
             self.__type,

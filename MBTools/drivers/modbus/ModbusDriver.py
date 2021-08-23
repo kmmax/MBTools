@@ -337,6 +337,7 @@ class Device(QObject, AbstractModbus):
     def driver(self):
         return self.__driver
 
+
 class ModbusDriver(QObject, AbstractModbus):
     dataChanged = pyqtSignal(str, Range)
     cmdSent = pyqtSignal(int, int)

@@ -13,6 +13,7 @@ from typing import Final
 from MBTools.oiserver.Tag import Tag, TagType
 from MBTools.drivers.modbus.ModbusDriver import *
 from MBTools.oiserver.constants import TagTypeFromStr, StrFromTagType
+from MBTools.oiserver.DataModel import DataModel
 
 from abc import ABC, abstractmethod
 
@@ -90,9 +91,26 @@ class Configurator(ABC):
         # self._tags = []
         # self._devices = []
         self._valid = False        # has valid configuration
+        self._model = None
+
+    def set_model(self, model: DataModel):
+        self._model = model
+
+    def model(self) -> DataModel:
+        return self._model
 
     def is_valid(self):
         return self._valid
+
+    @abstractmethod
+    def read_model_config(self, filename: str):
+        """Reads config file and write configuration to model data"""
+        pass
+
+    @abstractmethod
+    def write_model_config(self, filename: str):
+        """ Writes tags configuration to file from data model"""
+        pass
 
     @abstractmethod
     def read_config(self, file_name: str):
@@ -159,9 +177,122 @@ class JsonConfigure(Configurator):
     """
     Configurator which works with JSON format
     """
+
+    def read_model_config(self, filename: str):
+        try:
+            devices = {}
+            with open(filename, 'r') as f:
+                self.__data = json.load(f)
+                self.clear()
+                self._model.clear()
+
+                # devices
+                devs = self.__data[DEVICE_BLOCK_ALIASE]
+                for dev in devs:
+                    dev_config = DeviceConfig(name=dev[DEVICE_ALIASES.NAME],
+                                              protocol=dev[DEVICE_ALIASES.PROTOCOL],
+                                              ip=dev[DEVICE_ALIASES.IP],
+                                              port=dev[DEVICE_ALIASES.PORT])
+                    self._devices_config.append(dev_config)
+
+                    name=dev[DEVICE_ALIASES.NAME]
+                    protocol=dev[DEVICE_ALIASES.PROTOCOL]
+                    ip=dev[DEVICE_ALIASES.IP]
+                    port=dev[DEVICE_ALIASES.PORT]
+                    dev = DeviceCreator.create(ip, port, name)
+                    key = hash(dev.name())
+                    devices[key] = dev
+
+                # tags
+                tags = self.__data[TAG_BLOCK_ALIASE]
+                for tag in tags:
+                    tag_type = None
+                    if tag[TAG_ALIASES.TYPE] in TagTypeFromStr:
+                        tag_type = TagTypeFromStr[tag[TAG_ALIASES.TYPE]]
+                    else:
+                        continue
+
+                    name = tag[TAG_ALIASES.NAME]
+                    type_ = tag_type
+                    device_name = tag[TAG_ALIASES.DEVICE]
+                    address = tag[TAG_ALIASES.ADDRESS]
+                    comment = tag[TAG_ALIASES.COMMENT]
+
+                    # Находим устройство, соответстующее тегу
+                    key = hash(device_name)
+                    dev = devices.get(key)
+                    if dev is None:
+                        print("{0}, {1}: Bag tag's device in configuration, Break".format(key, device_name))
+                        continue
+
+                    tagr = Tag(device=dev, name=name, type_=type_, comment=comment, address=address)
+                    if (TagType.BOOL == tagr.type):
+                        bit_number = tag[TAG_ALIASES.BIT]
+                        tagr.bit_number = bit_number
+
+                    self._model.add(tagr)
+
+        except IOError as ioe:
+            print("Error opening the file_name: ", ioe)
+            return None
+
+        self._valid = True
+        if self._model is None:
+            return None
+
+        self.__drv = DriverCreator.create("modbus")
+        print(type(self.__drv))
+        # for dev in self._model.devices():
+        #     self.__drv.addDevice(dev)
+
+        return True
+
+    def write_model_config(self, filename: str):
+        assert self._model is not None
+
+        devs = self._model.devices()
+        itags = self._model.tags()
+
+        try:
+            with open(filename, 'w') as f:
+                data = {}
+                devices = []
+                for dev in devs:
+                    device = {}
+                    device[DEVICE_ALIASES.NAME] = dev.name()
+                    device[DEVICE_ALIASES.PROTOCOL] = "modbus" #dev.protocol()
+                    device[DEVICE_ALIASES.IP] = dev.ip()
+                    device[DEVICE_ALIASES.PORT] = dev.port()
+
+                    devices.append(device)
+
+                    data[DEVICE_BLOCK_ALIASE] = devices
+
+                tags = []
+                for itag in itags:
+                    tag = {}
+
+                    tag[TAG_ALIASES.NAME] = itag.name
+                    tag[TAG_ALIASES.TYPE] = StrFromTagType[itag.type]
+                    tag[TAG_ALIASES.DEVICE] = itag.device.name()
+                    tag[TAG_ALIASES.ADDRESS] = itag.address
+                    if TagType.BOOL == itag.type:
+                        tag[TAG_ALIASES.BIT] = itag.bit_number
+                    tag[TAG_ALIASES.COMMENT] = itag.comment
+
+                    tags.append(tag)
+
+                    data[TAG_BLOCK_ALIASE] = tags
+
+                json.dump(data, f, indent=4, ensure_ascii=False)
+
+        except IOError as ioe:
+            print("Error opening the file_name: ", ioe)
+
     def __init__(self):
         super().__init__()
         self.__data = None
+        self.__drv = None
 
     def read_config(self, file_name: str):
         try:
@@ -267,16 +398,25 @@ def main(argv):
     conf = JsonConfigure()
 
     # Adding a tag is checked here
-    res = conf.read_config(READ_VALID_FILE_NAME)
-    new_dev = DeviceConfig("test", "modbus", ip="127.0.0.1", port=1502 )
-    new_tag = TagConfig("TAG_TEST", new_dev.name, 100, TagType.INT)
-    conf.add_device(new_dev)
-    conf.add_tag(new_tag)
+    # res = conf.read_config(READ_VALID_FILE_NAME)
+    # new_dev = DeviceConfig("test", "modbus", ip="127.0.0.1", port=1502 )
+    # new_tag = TagConfig("TAG_TEST", new_dev.name, 100, TagType.INT)
+    # conf.add_device(new_dev)
+    # conf.add_tag(new_tag)
 
-    print(conf)
 
     # Configuration saving is checked here
-    conf.write_config("write_conf.json")
+    # conf.write_config("write_conf.json")
+
+    model = DataModel()
+    conf.set_model(model)
+    conf.read_model_config(READ_VALID_FILE_NAME)
+    print(model)
+    conf.write_model_config(WRITE_FILE_NAME)
+    model.clear()
+    print(model)
+    conf.read_model_config(READ_VALID_FILE_NAME)
+    print(model)
 
 
 if __name__ == "__main__":
