@@ -15,6 +15,8 @@ from MBTools.drivers.modbus.ModbusDriver import *
 from MBTools.oiserver.constants import TagTypeFromStr, StrFromTagType
 from MBTools.oiserver.DataModel import DataModel
 
+from PyQt5 import QtWidgets
+
 from abc import ABC, abstractmethod
 
 
@@ -241,9 +243,8 @@ class JsonConfigure(Configurator):
             return None
 
         self.__drv = DriverCreator.create("modbus")
-        print(type(self.__drv))
-        # for dev in self._model.devices():
-        #     self.__drv.addDevice(dev)
+        for dev in self._model.devices():
+            self.__drv.addDevice(dev)
 
         return True
 
@@ -368,6 +369,33 @@ class JsonConfigure(Configurator):
             print("Error opening the file_name: ", ioe)
         pass
 
+    # --- private ---
+    @staticmethod
+    def __calculateRanges(max_len: int, addresses: list) -> dict:
+        """ Method calculates ranges for modbus driver """
+        if len(addresses) < 1:
+            return None
+        ranges = []
+        addresses.sort()
+        min_value = min(addresses)
+        max_value = max(addresses)
+        first = min_value
+
+        x_old = min_value
+        print(addresses)
+        for x in addresses:
+            if (x - first) > max_len:
+                # last = x_old
+                pair = [first, x_old]
+                ranges.append(pair)
+                first = x
+            if x == max_value:
+                pair = [first, x]
+                ranges.append(pair)
+            x_old = x
+
+        return ranges
+
 
 class FormatName(Enum):
     JSON = 1
@@ -391,6 +419,8 @@ def create_config(name: FormatName, file: str):
 
 
 def main(argv):
+    app = QtWidgets.QApplication(sys.argv)
+
     READ_VALID_FILE_NAME = "conf.json"           # valid file for reading
     READ_INVALID_FILE_NAME = "conf1.json"        # invalid file for reading
     WRITE_FILE_NAME = "write_conf.json"      # file name for writing
@@ -417,6 +447,8 @@ def main(argv):
     print(model)
     conf.read_model_config(READ_VALID_FILE_NAME)
     print(model)
+
+    return app.exec()
 
 
 if __name__ == "__main__":
