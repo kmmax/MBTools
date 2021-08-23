@@ -352,6 +352,7 @@ class ModbusDriver(QObject, AbstractModbus):
 
     def addDevice(self, device: Device):
         thread = QThread()
+        device.setDriver(self)
         device.dataChanged.connect(self.onDataChanged)
         device.rangeNumberChanged.connect(self.rangeNumberChanged)
         self.cmdSent.connect(device.writeRegisters)
