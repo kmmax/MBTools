@@ -188,8 +188,12 @@ class DataModel(IDataModel, set):
 
     def __str__(self):
         msg = "model:\n"
+        msg += "\tdevices:\n"
+        for dev in self.__devices:
+            msg += "\t\t" + str(dev)
+        msg += "\ttags:\n"
         for tag in self.__hash_tags.values():
-            msg += "\t" + str(tag) + "\n"
+            msg += "\t\t" + str(tag) + "\n"
 
         return msg
 

@@ -56,7 +56,7 @@ class AbcConf(ABC):
         self._valid = False         # has valid configuration
         self._model = None          # current data model
 
-    def set_model(self, model: DataModel):
+    def set_model(self, model: IDataModel):
         self._model = model
 
     def model(self) -> DataModel:
@@ -65,9 +65,14 @@ class AbcConf(ABC):
     def is_valid(self):
         return self._valid
 
-    def add_tag(self, tag: TagConfig):
+    def add_tag(self, tag: Tag):
         """ Adds new tag in tag list """
-        self._tags_config.append(tag)
+        self._model.add(tag)
+
+    def add_tags(self, tags: list):
+        """ Adds new tag in tag list """
+        for tag in tags:
+            self.add_tag(tag)
 
     def del_tag(self, name: str):
         """ Removes tag by name """
@@ -218,80 +223,6 @@ class JsonConf(AbcConf):
         except IOError as ioe:
             print("Error opening the file_name: ", ioe)
 
-    def read_config(self, file_name: str):
-        try:
-            with open(file_name, 'r') as f:
-                self.__data = json.load(f)
-                self.clear()
-                devs = self.__data[DEVICE_BLOCK_ALIASE]
-                # print(devs)
-                for dev in devs:
-                    dev_config = DeviceConfig(name=dev[DEVICE_ALIASES.NAME],
-                                              protocol=dev[DEVICE_ALIASES.PROTOCOL],
-                                              ip=dev[DEVICE_ALIASES.IP],
-                                              port=dev[DEVICE_ALIASES.PORT])
-                    self._devices_config.append(dev_config)
-
-                tags = self.__data[TAG_BLOCK_ALIASE]
-                for tag in tags:
-                    tag_type = None
-                    if tag[TAG_ALIASES.TYPE] in TagTypeFromStr:
-                        tag_type = TagTypeFromStr[tag[TAG_ALIASES.TYPE]]
-                    else:
-                        continue
-                    tag_config = TagConfig(name=tag[TAG_ALIASES.NAME],
-                                           type_=tag_type,
-                                           device_name=tag[TAG_ALIASES.DEVICE],
-                                           address=tag[TAG_ALIASES.ADDRESS],
-                                           comment=tag[TAG_ALIASES.COMMENT])
-                    if (TagType.BOOL == tag_type):
-                        bit_number = tag[TAG_ALIASES.BIT]
-                        tag_config.set_bit(bit_number)
-                    self._tags_config.append(tag_config)
-        except IOError as ioe:
-            print("Error opening the file_name: ", ioe)
-            return None
-
-        self._valid = True
-        return self._devices_config, self._tags_config
-
-    def write_config(self, file_name: str):
-        try:
-            with open(file_name, 'w') as f:
-                data = {}
-                devices = []
-                for device_config in self._devices_config:
-                    device = {}
-                    device[DEVICE_ALIASES.NAME] = device_config.name
-                    device[DEVICE_ALIASES.PROTOCOL] = device_config.protocol
-                    device[DEVICE_ALIASES.IP] = device_config.ip
-                    device[DEVICE_ALIASES.PORT] = device_config.port
-
-                    devices.append(device)
-
-                    data[DEVICE_BLOCK_ALIASE] = devices
-
-                tags = []
-                for tag_config in self._tags_config:
-                    tag = {}
-                    tag[TAG_ALIASES.NAME] = tag_config.name
-                    tag[TAG_ALIASES.TYPE] = StrFromTagType[tag_config.type]
-                    tag[TAG_ALIASES.DEVICE] = tag_config.device_name
-                    tag[TAG_ALIASES.ADDRESS] = tag_config.address
-                    if TagType.BOOL == tag_config.type:
-                        tag[TAG_ALIASES.BIT] = tag_config.bit_number
-                    tag[TAG_ALIASES.COMMENT] = tag_config.comment
-
-                    tags.append(tag)
-
-                    data[TAG_BLOCK_ALIASE] = tags
-
-                json.dump(data, f, indent=4, ensure_ascii=False)
-
-        except IOError as ioe:
-            print("Error opening the file_name: ", ioe)
-        pass
-
 
 class ConfigCalculater(object):
     """This is an additional class for various calculations of the configurator. """
@@ -343,31 +274,18 @@ def main(argv):
     conf.set_model(model)
     dev1 = DeviceCreator.create(ip="127.0.0.1", port=10502, name="dev1")
     tag1 = Tag(dev1, "TAG1", TagType.INT, "This is tag1", address=100)
+    tag2 = Tag(dev1, "TAG2", TagType.INT, "This is tag2", address=101)
+    tag3 = Tag(dev1, "TAG3", TagType.INT, "This is tag3", address=102)
     conf.add_tag(tag1)
+    conf.add_tag(tag2)
+    conf.add_tag(tag3)
     print(model)
 
-
-    # res = conf.read_config(READ_VALID_FILE_NAME)
-    # new_dev = DeviceConfig("test", "modbus", ip="127.0.0.1", port=1502 )
-    # new_tag = TagConfig("TAG_TEST", new_dev.name, 100, TagType.INT)
-    # conf.add_device(new_dev)
-    # conf.add_tag(new_tag)
-
-
-    # Configuration saving is checked here
-    # conf.write_config("write_conf.json")
-
-    # model = DataModel()
-    # conf.set_model(model)
-    # conf.read_model_config(READ_VALID_FILE_NAME)
-    # print(model)
-    # conf.write_model_config(WRITE_FILE_NAME)
-    # model.clear()
-    # print(model)
-    # conf.read_model_config(READ_VALID_FILE_NAME)
-    # print(model)
-
-    # return app.exec()
+    model = conf.model()
+    tag_1 = model.find_tag_by_name("TAG1")
+    print(tag_1.device.driver())
+    print(tag_1.device)
+    print(tag_1)
 
 
 if __name__ == "__main__":
