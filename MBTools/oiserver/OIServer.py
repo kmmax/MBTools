@@ -124,15 +124,15 @@ class IOServer(QtCore.QObject):
         self.__tags.extend(tags)
         addresses = []
         ranges = []
-        """We split new tags addresses by devices.
-        Not consider tags which addresses is existed already.y"""
+        """We split new tags numbers by devices.
+        Not consider tags which numbers is existed already.y"""
         for i, dev in enumerate(self.__devices):
             dev_name = dev.name()
             device_tags = [tag for tag in tags if tag.device.name() == dev_name]
             device_addrs = [tag.address for tag in device_tags
                             if not dev.isAddressExists(tag.address)]
             """If the last tag is multy-register tag (larger than 1 register), 
-            we add tail (the required number of addresses to the end)."""
+            we add tail (the required number of numbers to the end)."""
             if device_tags:
                 last_tag = device_tags[-1]
                 if last_tag.size() > 1:
@@ -142,17 +142,17 @@ class IOServer(QtCore.QObject):
                     # if dev.isAddressExists(last_tag.address):
                     #     device_addrs.append(last_tag.address - 1)
                     device_addrs.append(last_tag.address)
-            device_addrs = list(set(device_addrs))  # Removing duplicates of addresses from the list
+            device_addrs = list(set(device_addrs))  # Removing duplicates of numbers from the list
 
             addresses.append(device_addrs)
-            print("addresses: {0}".format(addresses))
+            print("numbers: {0}".format(addresses))
 
-        """We find addresses ranges for each device"""
+        """We find numbers ranges for each device"""
         for device_addrs in addresses:
             range_ = IOServer.__calculateRanges(100, device_addrs)
             ranges.append(range_)
 
-        """Configuring devices by setting addresses ranges"""
+        """Configuring devices by setting numbers ranges"""
         for dev, dev_ranges in zip(self.__devices, ranges):
             if dev_ranges:
                 for i, range_ in enumerate(dev_ranges):

@@ -179,8 +179,15 @@ class JsonConfigure(Configurator):
     """
     Configurator which works with JSON format
     """
+    def __init__(self):
+        super().__init__()
+        self.__data = None
+        self.__drv = None
 
     def read_model_config(self, filename: str):
+        """Read config file into data model
+        @param[in] - name of config file
+        """
         try:
             devices = {}
             with open(filename, 'r') as f:
@@ -244,11 +251,20 @@ class JsonConfigure(Configurator):
 
         self.__drv = DriverCreator.create("modbus")
         for dev in self._model.devices():
+            addresses = ConfigCalculater.addresses_from_tags(self._model.tags(), dev)
+            ranges = ModbusCalculator.split_numbers(addresses, 100)
+            for i, rng in enumerate(ranges):
+                dev.addRange(rng[0], rng[1] - rng[0] + 2, "range{}".format(i))
+                # dev.start()
+            print(dev)
             self.__drv.addDevice(dev)
 
         return True
 
     def write_model_config(self, filename: str):
+        """Write save data model in config file
+        @param[filename] - name of config file
+        """
         assert self._model is not None
 
         devs = self._model.devices()
@@ -289,11 +305,6 @@ class JsonConfigure(Configurator):
 
         except IOError as ioe:
             print("Error opening the file_name: ", ioe)
-
-    def __init__(self):
-        super().__init__()
-        self.__data = None
-        self.__drv = None
 
     def read_config(self, file_name: str):
         try:
@@ -369,32 +380,20 @@ class JsonConfigure(Configurator):
             print("Error opening the file_name: ", ioe)
         pass
 
-    # --- private ---
+
+class ConfigCalculater(object):
+    """This is an additional class for various calculations of the configurator. """
+    def __init__(self):
+        pass
+
     @staticmethod
-    def __calculateRanges(max_len: int, addresses: list) -> dict:
-        """ Method calculates ranges for modbus driver """
-        if len(addresses) < 1:
-            return None
-        ranges = []
-        addresses.sort()
-        min_value = min(addresses)
-        max_value = max(addresses)
-        first = min_value
-
-        x_old = min_value
-        print(addresses)
-        for x in addresses:
-            if (x - first) > max_len:
-                # last = x_old
-                pair = [first, x_old]
-                ranges.append(pair)
-                first = x
-            if x == max_value:
-                pair = [first, x]
-                ranges.append(pair)
-            x_old = x
-
-        return ranges
+    def addresses_from_tags(tags: list, dev: Device) -> list:
+        """Returns a list of all addresses that the device polls"""
+        addresses = [tag.address for tag in tags if dev.name() == tag.device.name()]
+        addr_set = set(addresses)
+        addresses = list(addr_set)
+        print(dev.name(), addresses)
+        return addresses
 
 
 class FormatName(Enum):

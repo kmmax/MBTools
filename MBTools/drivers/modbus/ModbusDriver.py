@@ -27,6 +27,38 @@ class QualityEnum(enum.Enum):
     NOT_CONFIGURED = 5  # Driver hasn't represented address
 
 
+class ModbusCalculator(object):
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def split_numbers(numbers: list, max_len: int) -> list:
+        """Splits list of number by groups with max_len size"""
+        assert max_len > 0
+
+        ranges = []
+        set_numbers = set(numbers)
+        numbers = list(set_numbers)
+        numbers.sort()
+        min_value = min(numbers)
+        max_value = max(numbers)
+        first = min_value
+
+        x_old = min_value
+        for x in numbers:
+            if (x - first) >= max_len:
+                # last = x_old
+                pair = [first, x_old]
+                ranges.append(pair)
+                first = x
+            if x == max_value:
+                pair = [first, x]
+                ranges.append(pair)
+            x_old = x
+
+        return ranges
+
+
 """ Represents Quality as String """
 QualityEnumStr = {
     QualityEnum.UNDEF: "UNDEF",                     # corresponds to UNDEF quality
@@ -230,7 +262,7 @@ class Device(QObject, AbstractModbus):
 
     def addRange(self, addr, num, name: str = '?') -> Range:
         """
-        Adds new range of modbus addresses (this will be new request)
+        Adds new range of modbus numbers (this will be new request)
         :param addr: Start address
         :param num: Number of registers
         :param name: Name of registers range
@@ -238,7 +270,7 @@ class Device(QObject, AbstractModbus):
 
         \todo This method should itself reallocate the ranges based on the existing ranges
         """
-        print("{0}: Device::addRange".format(self.name()))
+        # print("{0}: Device::addRange".format(self.name()))
         data = Range(num)
         data.setAddress(addr)
         data.setObjectName(name)
@@ -336,6 +368,12 @@ class Device(QObject, AbstractModbus):
 
     def driver(self):
         return self.__driver
+
+    def __str__(self):
+        msg = "{}:\n".format(self.name())
+        for r in self.__ranges:
+            msg += "\t{0}\n".format(str(r))
+        return msg
 
 
 class ModbusDriver(QObject, AbstractModbus):
