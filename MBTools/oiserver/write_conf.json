@@ -1,0 +1,104 @@
+{
+    "devices": [
+        {
+            "name": "hmi1",
+            "protocol": "modbus",
+            "ip": "10.18.40.193",
+            "port": 502
+        },
+        {
+            "name": "modsim",
+            "protocol": "modbus",
+            "ip": "10.18.32.78",
+            "port": 10502
+        }
+    ],
+    "tags": [
+        {
+            "name": "M1T1PL02AL00020.PV",
+            "type": "REAL",
+            "device": "hmi1",
+            "address": 1885,
+            "comment": "PT243: Value"
+        },
+        {
+            "name": "M1T1PL02AL00020.AM",
+            "type": "WORD",
+            "device": "hmi1",
+            "address": 1887,
+            "comment": "PT243: Error"
+        },
+        {
+            "name": "M1T1PL02AL00020.WM1",
+            "type": "BOOL",
+            "device": "hmi1",
+            "address": 1887,
+            "bit": 1,
+            "comment": "PT243: RIO: no connection"
+        },
+        {
+            "name": "PV",
+            "type": "REAL",
+            "device": "hmi1",
+            "address": 100,
+            "comment": "PT243: Value"
+        },
+        {
+            "name": "AM",
+            "type": "WORD",
+            "device": "hmi1",
+            "address": 150,
+            "comment": "PT243: Error"
+        },
+        {
+            "name": "WM1",
+            "type": "BOOL",
+            "device": "hmi1",
+            "address": 191,
+            "bit": 1,
+            "comment": "PT243: RIO: no connection"
+        },
+        {
+            "name": "Register1",
+            "type": "INT",
+            "device": "modsim",
+            "address": 1,
+            "comment": "HMI2: INT Register"
+        },
+        {
+            "name": "Register1.1",
+            "type": "REAL",
+            "device": "modsim",
+            "address": 1,
+            "comment": "HMI2: REAL Register "
+        },
+        {
+            "name": "Register1.2",
+            "type": "REAL",
+            "device": "modsim",
+            "address": 1,
+            "comment": "HMI2: REAL Register1.2 "
+        },
+        {
+            "name": "Register100",
+            "type": "INT",
+            "device": "modsim",
+            "address": 100,
+            "comment": "HMI2: INT Register"
+        },
+        {
+            "name": "Register101",
+            "type": "INT",
+            "device": "modsim",
+            "address": 101,
+            "comment": "HMI2: INT Register"
+        },
+        {
+            "name": "Register102",
+            "type": "INT",
+            "device": "modsim",
+            "address": 102,
+            "comment": "HMI2: INT Register"
+        }
+    ]
+}
