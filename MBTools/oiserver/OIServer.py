@@ -3,6 +3,8 @@ from PyQt5 import QtWidgets, QtCore
 import sys
 import numpy as np
 from MBTools.oiserver.Tag import Tag, TagType, TagTypeSize
+from MBTools.oiserver.DataModel import DataModel
+from MBTools.oiserver.OIServerConfigure import JsonConfigure
 from MBTools.drivers.modbus.ModbusDriver import Range, \
     DeviceCreator, DriverCreator, QualityEnum
 from MBTools.oiserver.OIServerConfigure import JsonConfigure, create_config, FormatName
@@ -24,6 +26,20 @@ class IOServer(QtCore.QObject):
         self.__drv = None
         self.__devices = []
         self.__tags = []
+
+        self.__model = DataModel()
+        self.__configurator = JsonConfigure()
+        self.__configurator.set_model(self.__model)
+
+    #----------------------------------- new --------------------------------
+    def configurator(self):
+        """Returns internal configurator"""
+        return self.__configurator
+
+    def model(self):
+        """Returns internal data model"""
+        return self.__model
+    #----------------------------------- new --------------------------------
 
     def clear_config(self):
 

@@ -6,7 +6,7 @@ from MBTools.utilites.Messages import DummyMessage
 # from .OIServer import IOServer
 from MBTools.oiserver.OIServer import IOServer
 from MBTools.oiserver.Tag import Tag, TagType
-from MBTools.jsonserver.JsonServer import JsonServer
+# from MBTools.jsonserver.JsonServer import JsonServer
 
 
 def main(argv):
@@ -18,8 +18,8 @@ def main(argv):
     tags = list([tag1, tag2, tag3])
     io = IOServer()
     io.add_tags(tags)
-    json = JsonServer(io)
-    json.start()
+    # json = JsonServer(io)
+    # json.start()
 
     return app.exec()
 

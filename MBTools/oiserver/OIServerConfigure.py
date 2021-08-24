@@ -198,11 +198,11 @@ class JsonConfigure(Configurator):
                 # devices
                 devs = self.__data[DEVICE_BLOCK_ALIASE]
                 for dev in devs:
-                    dev_config = DeviceConfig(name=dev[DEVICE_ALIASES.NAME],
-                                              protocol=dev[DEVICE_ALIASES.PROTOCOL],
-                                              ip=dev[DEVICE_ALIASES.IP],
-                                              port=dev[DEVICE_ALIASES.PORT])
-                    self._devices_config.append(dev_config)
+                    # dev_config = DeviceConfig(name=dev[DEVICE_ALIASES.NAME],
+                    #                           protocol=dev[DEVICE_ALIASES.PROTOCOL],
+                    #                           ip=dev[DEVICE_ALIASES.IP],
+                    #                           port=dev[DEVICE_ALIASES.PORT])
+                    # self._devices_config.append(dev_config)
 
                     name=dev[DEVICE_ALIASES.NAME]
                     protocol=dev[DEVICE_ALIASES.PROTOCOL]
