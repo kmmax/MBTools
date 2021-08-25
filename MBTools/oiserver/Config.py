@@ -6,6 +6,18 @@
 # email kmmax@yandex.ru
 # -----------------------------------------------------------
 
+"""
+Модуль Config.py
+Назначение:
+- Производит чтение конфигурации из файла и производит настройку модели данных
+- Производит запись текущей конфигурации модели данных в файл
+
+@todo
+- в полной мере не реализовано добавление/удаление тега(гов). Т.е. при добавлении/удалении тега необходима перенастройка драйвера в соответствии с конфигурацией тега:
+    + добавление/удаление Device (если нужно) в Driver
+    + изменение Ranges в Device (если нужно) при условии, что Tag использует уже сконфигурированный Device
+"""
+
 import json
 from enum import Enum
 from typing import Final
@@ -53,8 +65,8 @@ class AbcConf(ABC):
     Class which configures data model
     """
     def __init__(self):
-        self._valid = False         # has valid configuration
-        self._model = None          # current data model
+        self._valid = False                     # has valid configuration
+        self._model: IDataModel = DataModel()   # current data model
 
     def set_model(self, model: IDataModel):
         self._model = model
@@ -63,19 +75,35 @@ class AbcConf(ABC):
         return self._model
 
     def is_valid(self):
-        return self._valid
+        if self._model is None:
+            return False
+        return True
+        # return self._valid
 
     def add_tag(self, tag: Tag):
-        """ Adds new tag in tag list """
+        """ Adds new tag in tag list
+        @todo Данная методо только добавляет тег в список тегов модели, но не
+        производит переконфигерацию драйвера (возможно нужно добавить новые адреса
+        для опроса, перераспределить ranges и т.д.). Это нужно отнести к ответственности
+        самого драйвера.
+
+        NOT IMPLEMENTED!!!
+        """
         self._model.add(tag)
 
     def add_tags(self, tags: list):
-        """ Adds new tag in tag list """
+        """ Adds new tag in tag list
+
+        NOT IMPLEMENTED!!! see: add_tag()
+        """
         for tag in tags:
             self.add_tag(tag)
 
     def del_tag(self, name: str):
-        """ Removes tag by name """
+        """ Removes tag by name
+
+        NOT IMPLEMENTED!!! see: add_tag()
+        """
         pass
 
     def clear(self):
@@ -173,7 +201,7 @@ class JsonConf(AbcConf):
             for i, rng in enumerate(ranges):
                 dev.addRange(rng[0], rng[1] - rng[0] + 2, "range{}".format(i))
                 # dev.start()
-            print(dev)
+            # print(dev)
             self.__drv.addDevice(dev)
 
         return True
@@ -252,7 +280,7 @@ def create_config(name: FormatName, file: str):
     """
     # JSON
     if FormatName.JSON == name:
-        conf = JsonConfigure()
+        conf = JsonConf()
         conf.read_config(file)
         if conf.is_valid():
             return conf
@@ -268,11 +296,18 @@ def main(argv):
     WRITE_FILE_NAME = "write_conf.json"      # file name for writing
 
     conf = JsonConf()
+    # model = conf.model()
+    # tag_1 = model.find_tag_by_name("TAG1")
+    # print(tag_1.device.driver())
+    # print(tag_1.device)
+    # print(tag_1)
 
     # Adding a tag is checked here
     model: IDataModel = DataModel()
     conf.set_model(model)
-    dev1 = DeviceCreator.create(ip="127.0.0.1", port=10502, name="dev1")
+    conf.read_model_config(READ_VALID_FILE_NAME)
+
+    dev1 = DeviceCreator.create(ip="127.0.0.1", port=30502, name="dev8")
     tag1 = Tag(dev1, "TAG1", TagType.INT, "This is tag1", address=100)
     tag2 = Tag(dev1, "TAG2", TagType.INT, "This is tag2", address=101)
     tag3 = Tag(dev1, "TAG3", TagType.INT, "This is tag3", address=102)
@@ -281,11 +316,11 @@ def main(argv):
     conf.add_tag(tag3)
     print(model)
 
-    model = conf.model()
-    tag_1 = model.find_tag_by_name("TAG1")
-    print(tag_1.device.driver())
-    print(tag_1.device)
-    print(tag_1)
+    # conf.read_model_config(READ_VALID_FILE_NAME)
+    # model: IDataModel = DataModel()
+    # print(model)
+
+    app.exec()
 
 
 if __name__ == "__main__":
