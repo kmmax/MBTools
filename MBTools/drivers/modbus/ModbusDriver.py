@@ -152,6 +152,10 @@ class Range(QObject, AbstractModbus):
     def address(self) -> int:
         return self.__address
 
+    def all_addresses(self) -> list:
+        addresses = [addr for addr in range(self.__address, self.__address + len(self.__map))]
+        return addresses
+
     def number(self) -> int:
         return len(self.__map)
 
@@ -204,7 +208,7 @@ class Range(QObject, AbstractModbus):
     # ---------- Privat -----------
     def __str__(self):
         """ data[id]: [addr:num] time [quality] registers """
-        return "data{0}: {1} [{2}:{3}] {4}: {5}".format(
+        return "data{0}: {1} [addr={2}:num={3}] {4}: {5}".format(
             self.__id,
             "{:02}:{:02}:{:02}".format(self.__time.tm_hour, self.__time.tm_min, self.__time.tm_sec, self.__time),
             self.__address, len(self.__map),
@@ -284,6 +288,11 @@ class Device(QObject, AbstractModbus):
         self.rangeNumberChanged.emit()
         return True
 
+    def delAllRanges(self):
+        self.__ranges.clear()
+        self.rangeNumberChanged.emit()
+        return True
+
     def delRangeById(self, id: int) -> bool:
         for data in self.__ranges:
             if data.dataId() == id:
@@ -291,6 +300,13 @@ class Device(QObject, AbstractModbus):
                 self.rangeNumberChanged.emit()
                 return True
         return False
+
+    def all_addresses(self) -> list:
+        addresses = []
+        for rng in self.__ranges:
+            addresses.extend(rng.all_addresses())
+
+        return addresses
 
     def ranges(self):
         return self.__ranges
@@ -389,6 +405,8 @@ class ModbusDriver(QObject, AbstractModbus):
         self.__devices = {}
 
     def addDevice(self, device: Device):
+        assert device not in self.__devices
+
         thread = QThread()
         device.setDriver(self)
         device.dataChanged.connect(self.onDataChanged)
