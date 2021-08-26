@@ -26,6 +26,8 @@ class AbcDriverConf(ABC):
     Class which configures driver
     """
     def __init__(self):
+        self.__MAX_NUMBERS_IN_RANGE = 100
+
         self._driver: ModbusDriver  = None
 
     def set_driver(self, driver: ModbusDriver):
@@ -54,39 +56,59 @@ class AbcDriverConf(ABC):
                 return None
             else:
                 # print("\tNew ranges will be crerated to {}".format(dev.name()))
-                dev.delAllRanges()
                 result_addresses = old_addresses + new_addresses
-                ranges = ModbusCalculator.split_numbers(result_addresses, 100)
-                for i, rng in enumerate(ranges):
-                    dev.addRange(rng[0], rng[1] - rng[0], "range{}".format(i))
+                self.update_ranges(dev, result_addresses)
+                # dev.delAllRanges()
+                # ranges = ModbusCalculator.split_numbers(result_addresses, 100)
+                # for i, rng in enumerate(ranges):
+                #     dev.addRange(rng[0], rng[1] - rng[0] + 1, "range{}".format(i))
                 print("\tNew ranges has been created for {}".format(dev.name()))
                 return None
         else:
             # print("\tAdd: dev {0} isn't exists".format(dev.name()))
             result_addresses = old_addresses + new_addresses
-            ranges = ModbusCalculator.split_numbers(result_addresses, 100)
-            # print("\tresult_addresses: {}".format(result_addresses))
-            # print("\tranges: {}".format(ranges))
-            for i, rng in enumerate(ranges):
-                dev.addRange(rng[0], rng[1] - rng[0], "range{}".format(i))
-            print("\tDevice's been  added: {}".format(dev.name()))
+            self.update_ranges(dev, result_addresses)
             self._driver.addDevice(dev)
+            print("\tDevice's been  added: {}".format(dev.name()))
             return None
 
         print("End of method")
 
-    def del_addresses(self, dev: Device, adresses: list):
+    def del_addresses(self, dev: Device, addresses: list):
         assert dev is not None
 
-        devs = self._driver.devices()
-        if dev in devs:
-            print("Del: dev {} is exists".format(dev.name()))
-        else:
-            print("Del: dev {} will be created".format(dev.name()))
+        MAX_NUMBERS_IN_RANGE = 100
 
-    def del_channel(self, dev: Device, range: Range ):
-        assert self._driver is not None
-        pass
+        devs = self._driver.devices()
+        # Нет такого устройства
+        if dev not in devs:
+            print("Del: dev {} isn't exists".format(dev.name()))
+            return None
+
+        old_addresses = dev.all_addresses()
+        del_addresses = [addr for addr in addresses if addr in old_addresses]
+        result_addresses = [addr for addr in old_addresses if addr not in del_addresses]
+        # print("\taddresses: {0}; {1}".format(dev.name(), addresses))
+        # print("\told_addresses: {0}; {1}".format(dev.name(), old_addresses))
+        # print("\tdel_addresses: {0}; {1}".format(dev.name(), del_addresses))
+        # print("\tresult_addresses: {0}; {1}".format(dev.name(), result_addresses))
+
+        # ranges = ModbusCalculator.split_numbers(result_addresses, MAX_NUMBERS_IN_RANGE)
+        # dev.delAllRanges()
+        # for i, rng in enumerate(ranges):
+        #     dev.addRange(rng[0], rng[1] - rng[0] + 1, "range{}".format(i))
+        # print("\tRanges is chaned{}".format(dev.name()))
+        self.update_ranges(dev, result_addresses)
+        return None
+
+    def update_ranges(self, dev: Device, addresses: list):
+        """Пересчитывает диапазоны адресов, на основании списка адресов
+
+        """
+        ranges = ModbusCalculator.split_numbers(addresses, self.__MAX_NUMBERS_IN_RANGE)
+        dev.delAllRanges()
+        for i, rng in enumerate(ranges):
+            dev.addRange(rng[0], rng[1] - rng[0] + 1, "range{}".format(i))
 
     def clear(self):
         """ Clears all configuration """
