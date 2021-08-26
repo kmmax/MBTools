@@ -4,9 +4,8 @@ import time
 
 from PyQt5 import QtWidgets
 
-# from MBTools.utilites.Messages import DummyMessage
 from MBTools.drivers.modbus.ModbusDriver import DeviceCreator, DriverCreator
-from MBTools.drivers.modbus.DriverConfig import AbcDriverConf
+from MBTools.drivers.modbus.DriverConfig import AbcDriverConf, ModbusDriverConf
 from MBTools.drivers.modbus.tools.ModbusDriverViewer.ModbusDriverViewer import ModbusDriverViewer
 
 
@@ -14,7 +13,7 @@ def main(argv):
     app = QtWidgets.QApplication(sys.argv)
 
     drv1 = DriverCreator.create("modbus")
-    cfg = AbcDriverConf()
+    cfg: AbcDriverConf = ModbusDriverConf()
     cfg.set_driver(drv1)
 
     dev1 = DeviceCreator.create("127.0.0.1", 10502, "dev1")
