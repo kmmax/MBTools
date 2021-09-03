@@ -7,8 +7,8 @@ from MBTools.drivers.modbus.ModbusDriver import *
 # class ModbusItem(object):
 class ModbusItem:
 
-    def __init__(self, name,  parentNode: 'ModbusItem'=None, ref: AbstractModbus=None):
-        self._ref: AbstractModbus = ref
+    def __init__(self, name, parentNode: 'ModbusItem'=None, ref: AbsModbus=None):
+        self._ref: AbsModbus = ref
         self._name = "*"
         self._comment = ""
         if ref is not None:

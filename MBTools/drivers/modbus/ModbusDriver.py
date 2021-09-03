@@ -14,6 +14,14 @@ DEFAULT_PORT = 502            # default port of modbus server
 # NUMBER = 50                 # number of registers
 REQUEST_DELAY = 0.5           # default delay between requests, sec
 
+
+def overrides(interface_class):
+    def overrider(method):
+        assert(method.__name__ in dir(interface_class))
+        return method
+    return overrider
+
+
 lock = QtCore.QMutex()
 
 """ Tag qulity """
@@ -72,7 +80,7 @@ QualityEnumStr = {
 
 # \todo add ABC
 # use accessify library fo @protected and @prived methods
-class AbstractModbus:
+class AbsModbus:
     """
    This class defines interface for all modbus items (modbus ranges, modbus devices and drivers itself)
     """
@@ -109,13 +117,13 @@ class AbstractModbus:
         self._setComment()
 
 
-class Range(QObject, AbstractModbus):
+class Range(QObject, AbsModbus):
     """ Class represents one continuous range of modbus registers """
     id = 0
 
     def __init__(self, size: int = 0, parent=None):
         QObject.__init__(self, parent)
-        AbstractModbus.__init__(self)
+        AbsModbus.__init__(self)
 
         self.__address = 0                   # first registers address
         self.__map = [0] * size              # continuous sequence of modbus registers
@@ -134,7 +142,7 @@ class Range(QObject, AbstractModbus):
         return address in range(self.__address, self.__address + self.number())
 
     def ranges(self) -> list:
-        """ AbstractModbus interface Returns all ranges of item.  In this case, returns itself. """
+        """ AbsModbus interface Returns all ranges of item.  In this case, returns itself. """
         return [self]
 
     def dataId(self) -> int:
@@ -219,7 +227,7 @@ class Range(QObject, AbstractModbus):
         return len(self.__map)
 
 
-class Device(QObject, AbstractModbus):
+class Device(QObject, AbsModbus):
     """
     Class pools modbus server
     """
@@ -392,51 +400,21 @@ class Device(QObject, AbstractModbus):
         return msg
 
 
-class ModbusDriver(QObject, AbstractModbus):
-    dataChanged = pyqtSignal(str, Range)
-    cmdSent = pyqtSignal(int, int)
-    rangeNumberChanged = pyqtSignal()
-    deviceNumberChanged = pyqtSignal()
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.__name = ""
-        self.__comment = ""
-        self.__devices = {}
-
+class AbsConfControl(object):
+    @abstractmethod
     def addDevice(self, device: Device):
-        assert device not in self.__devices
+        pass
 
-        thread = QThread()
-        device.setDriver(self)
-        device.dataChanged.connect(self.onDataChanged)
-        device.rangeNumberChanged.connect(self.rangeNumberChanged)
-        self.cmdSent.connect(device.writeRegisters)
-        self.__devices[device] = thread
-        device.moveToThread(thread)
-        thread.started.connect(device.start)
-        device.finished.connect(thread.terminate)
-        thread.start()
-        self.deviceNumberChanged.emit()
-
+    @abstractmethod
     def delDevice(self, device: Device) -> bool:
-        for dev in self.__devices.keys():
-            print(id(dev))
+        pass
 
-        if device in self.__devices:
-            print("TagList has found {0}".format(device))
-        else:
-            print("TagList hasn't found ")
-            return False
+    @abstractmethod
+    def devices(self):
+        pass
 
-        device.stop()
-        thread: QThread = self.__devices[device]
-        thread.quit()
-        thread.wait()
-        print("device deleted : {0}".format(thread.isRunning()))
-        del self.__devices[device]
-        self.deviceNumberChanged.emit()
 
+class AbsDataChange(QObject):
     @QtCore.pyqtSlot(Range)
     def onDataChanged(self, data: Range):
         sender = self.sender()
@@ -456,26 +434,102 @@ class ModbusDriver(QObject, AbstractModbus):
         # TODO make this method by using signal, now it'not work
         # self.cmdSent.emit(addr, value)
 
+
+class ModbusDriver(AbsDataChange, AbsModbus, AbsConfControl):
+    dataChanged = pyqtSignal(str, Range)
+    cmdSent = pyqtSignal(int, int)
+    rangeNumberChanged = pyqtSignal()
+    deviceNumberChanged = pyqtSignal()
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.__name = ""
+        self.__comment = ""
+        self.__devices = {}
+
+    #------------------- AbsDataChange -------------------------------------------
+    @QtCore.pyqtSlot(Range)
+    @overrides(AbsDataChange)
+    def onDataChanged(self, data: Range):
+        sender = self.sender()
+        self.dataChanged.emit(sender.objectName(), data)
+
+    @QtCore.pyqtSlot(int, int)
+    @overrides(AbsDataChange)
+    def onCmdReady(self, addr: int, value: int, device: Device = None):
+        """
+        Sends value for writing to register using address for all devices which has this address
+        :param addr: address of register for writing
+        :param value: value for writing
+        :return:
+        """
+        for device in self.__devices.keys():
+            if device.isAddressExists(addr):
+                device.writeRegisters(addr, value)
+        # TODO make this method by using signal, now it'not work
+        # self.cmdSent.emit(addr, value)
+
+    #------------------- AbsConfControl -------------------------------------------
+    @overrides(AbsConfControl)
+    def addDevice(self, device: Device):
+        assert device not in self.__devices
+
+        thread = QThread()
+        device.setDriver(self)
+        device.dataChanged.connect(self.onDataChanged)
+        device.rangeNumberChanged.connect(self.rangeNumberChanged)
+        self.cmdSent.connect(device.writeRegisters)
+        self.__devices[device] = thread
+        device.moveToThread(thread)
+        thread.started.connect(device.start)
+        device.finished.connect(thread.terminate)
+        thread.start()
+        self.deviceNumberChanged.emit()
+
+    @overrides(AbsConfControl)
+    def delDevice(self, device: Device) -> bool:
+        for dev in self.__devices.keys():
+            print(id(dev))
+
+        if device in self.__devices:
+            print("TagList has found {0}".format(device))
+        else:
+            print("TagList hasn't found ")
+            return False
+
+        device.stop()
+        thread: QThread = self.__devices[device]
+        thread.quit()
+        thread.wait()
+        print("device deleted : {0}".format(thread.isRunning()))
+        del self.__devices[device]
+        self.deviceNumberChanged.emit()
+
+    @overrides(AbsConfControl)
     def devices(self):
         devices = self.__devices.keys()
         return devices
 
-    # Overrided methods from AbstractDriver
+    #------------------- AbsModbus -------------------------------------------
+    @overrides(AbsModbus)
     def ranges(self):
         datas = []
         for client in self.devices():
             datas.extend(client.ranges())
         return datas
 
+    @overrides(AbsModbus)
+    def isAddressExists(self, address: int) -> bool:
+        pass
+
+    #------------------- protected -------------------------------------------
     def _setName(self):
         self.__name = self.objectName()
 
     def _setComment(self):
         self.__comment = "Modbus driver"
 
-    def isAddressExists(self, address: int) -> bool:
-        pass
-
+    #------------------- public -------------------------------------------
     def clear(self):
         dev = self.__devices.keys()[0]
         self.delDevice(dev)

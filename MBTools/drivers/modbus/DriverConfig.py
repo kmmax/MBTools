@@ -17,21 +17,29 @@
 
 import sys
 import time
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 from PyQt5 import QtWidgets
+from PyQt5.QtCore import QObject
 
-from MBTools.drivers.modbus.ModbusDriver import ModbusDriver, Device, Range, DeviceCreator, DriverCreator, ModbusCalculator
+from MBTools.drivers.modbus.ModbusDriver import ModbusDriver, Device, Range, DeviceCreator, DriverCreator, ModbusCalculator, AbsConfControl
 
 
-class AbcDriverConf(ABC):
+def overrides(interface_class):
+    def overrider(method):
+        assert(method.__name__ in dir(interface_class))
+        return method
+    return overrider
+
+
+class AbcDriverConf(object):
     """
     Class which configures driver
     """
     def __init__(self):
         self.__MAX_NUMBERS_IN_RANGE = 100   # Maximum address range from minimum to maximum
 
-        self._driver: ModbusDriver = None   # Reference to ModbusDriver
+        self._driver: AbsConfControl = None   # Reference to ModbusDriver
 
     @abstractmethod
     def add_addresses(self, dev: Device, addresses: list):
@@ -46,14 +54,6 @@ class AbcDriverConf(ABC):
     @abstractmethod
     def clear(self):
         self._driver: ModbusDriver = None   # Reference to ModbusDriver
-
-    @abstractmethod
-    def add_addresses(self, dev: Device, addresses: list):
-        pass
-
-    @abstractmethod
-    def del_addresses(self, dev: Device, addresses: list):
-        pass
 
     def set_driver(self, driver: ModbusDriver):
         """Sets current modbus driver"""
@@ -82,10 +82,11 @@ class AbcDriverConf(ABC):
             dev.addRange(rng[0], rng[1] - rng[0] + 1, "range{}".format(i))
 
 
-class ModbusDriverConf(AbcDriverConf):
+class ModbusDriverConf(QObject, AbcDriverConf):
     def __init__(self): 
         super().__init__()
-    
+
+    @overrides(AbcDriverConf)
     def add_addresses(self, dev: Device, addresses: list):
         """
         Adding new addresses to device for polling
@@ -125,6 +126,7 @@ class ModbusDriverConf(AbcDriverConf):
 
         assert False, "End of ModbusDriverConf::add_addreses"
 
+    @overrides(AbcDriverConf)
     def del_addresses(self, dev: Device, addresses: list):
         """ Deletes addresses from device
 
@@ -153,6 +155,7 @@ class ModbusDriverConf(AbcDriverConf):
         self._update_ranges(dev, new_addresses)
         return None
 
+    @overrides(AbcDriverConf)
     def clear(self):
         """ Clears all configuration
         @todo Not implemented !!!
@@ -163,27 +166,23 @@ class ModbusDriverConf(AbcDriverConf):
 def main(argv):
     app = QtWidgets.QApplication(sys.argv)
 
-    # dev1
-    dev1 = DeviceCreator.create("10.18.32.78", 10502, "dev1")
-    dev1.addRange(0, 5, "data1")
+    dev1 = DeviceCreator.create("127.0.0.1", 10502, "dev1")
+    dev2 = DeviceCreator.create("127.0.0.1", 20502, "dev2")
+    dev3 = DeviceCreator.create("127.0.0.1", 30502, "dev3")
 
-    # dev2
-    dev2 = DeviceCreator.create("10.18.32.78", 10502, "dev2")
+    drv1 = DriverCreator.create("modbus")
 
-    # dev3
-    dev3 = DeviceCreator.create("127.0.0.1", 10502, "dev3")
-
-    devs = [dev1]
-    drv1 = DriverCreator.create("modbus", devs)
-
-    cfg = AbcDriverConf()
+    cfg: AbcDriverConf = ModbusDriverConf()
     cfg.set_driver(drv1)
 
     time.sleep(3)
     print("----------------")
-    cfg.add_addresses(dev1, [123, 128])
+    cfg.add_addresses(dev1, [21, 22, 123, 128])
+    time.sleep(3)
     cfg.add_addresses(dev3, [21, 22, 100, 101])
+    time.sleep(3)
     cfg.add_addresses(dev2, [23, 28])
+    time.sleep(3)
     cfg.add_addresses(dev3, [21, 22, 55, 58, 92, 100, 101, 124, 204, 1288, 1293])
 
     return app.exec()

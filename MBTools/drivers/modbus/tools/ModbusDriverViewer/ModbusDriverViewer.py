@@ -148,7 +148,7 @@ class ModbusDriverViewer(QtWidgets.QMainWindow):
         model: DriverModel = None
         model = self.ui.treeView.model()
         node = model.getNodeFromIndex(index)
-        mb: AbstractModbus = node.ref()
+        mb: AbsModbus = node.ref()
         if mb is None:
             print("Node is None")
             return None

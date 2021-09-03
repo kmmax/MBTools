@@ -252,10 +252,6 @@ class IOServer(QtCore.QObject):
 
     @QtCore.pyqtSlot(str, Range)
     def __onDataUpdated(self, dev_name, range_):
-        pass
-        # print(
-        #     "OIServer: onDataUpdated : "
-        #     "dev_name={0}, range={1}".format(dev_name, range_))
         for tag in self.__tags:
             address = tag.address
             if range_.isAddressExists(address):
