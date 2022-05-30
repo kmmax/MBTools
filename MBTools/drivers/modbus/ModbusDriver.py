@@ -447,7 +447,7 @@ class ModbusDriver(AbsDataChange, AbsModbus, AbsConfControl):
         self.__comment = ""
         self.__devices = {}
 
-    #------------------- AbsDataChange -------------------------------------------
+    # ------------------- AbsDataChange -------------------------------------------
     @QtCore.pyqtSlot(Range)
     @overrides(AbsDataChange)
     def onDataChanged(self, data: Range):
@@ -469,7 +469,7 @@ class ModbusDriver(AbsDataChange, AbsModbus, AbsConfControl):
         # TODO make this method by using signal, now it'not work
         # self.cmdSent.emit(addr, value)
 
-    #------------------- AbsConfControl -------------------------------------------
+    # ------------------- AbsConfControl -------------------------------------------
     @overrides(AbsConfControl)
     def addDevice(self, device: Device):
         assert device not in self.__devices
@@ -510,7 +510,7 @@ class ModbusDriver(AbsDataChange, AbsModbus, AbsConfControl):
         devices = self.__devices.keys()
         return devices
 
-    #------------------- AbsModbus -------------------------------------------
+    # ------------------- AbsModbus -------------------------------------------
     @overrides(AbsModbus)
     def ranges(self):
         datas = []
@@ -522,14 +522,14 @@ class ModbusDriver(AbsDataChange, AbsModbus, AbsConfControl):
     def isAddressExists(self, address: int) -> bool:
         pass
 
-    #------------------- protected -------------------------------------------
+    # ------------------- protected -------------------------------------------
     def _setName(self):
         self.__name = self.objectName()
 
     def _setComment(self):
         self.__comment = "Modbus driver"
 
-    #------------------- public -------------------------------------------
+    # ------------------- public -------------------------------------------
     def clear(self):
         dev = self.__devices.keys()[0]
         self.delDevice(dev)
@@ -567,13 +567,13 @@ def main(argv):
     device1.addRange(20, 7, "data2")
     drv1.addDevice(device1)
 
-    # slepping and adding device after
+    # sleeping and adding device after
     QThread.sleep(5)
     device2 = DeviceCreator.create("10.18.32.78", 20502, "dev2")
     device2.addRange(0, 10)
     drv1.addDevice(device2)
 
-    # slepping and deleting device after
+    # sleeping and deleting device after
     QThread.sleep(5)
     drv1.delDevice(device2)
 

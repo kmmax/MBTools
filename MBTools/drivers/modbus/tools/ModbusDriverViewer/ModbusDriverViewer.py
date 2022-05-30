@@ -5,6 +5,7 @@ from MBTools.drivers.modbus.tools.ModbusDriverViewer.ModbusModel import *
 from MBTools.drivers.modbus.ModbusDriver import *
 from MBTools.drivers.modbus.tools.ModbusDriverViewer.AddDriverDlg import AddDriverDlg
 from MBTools.drivers.modbus.tools.ModbusDriverViewer.AddRangeDlg import AddRangeDlg
+from MBTools.utilites.Messages import DummyMessage
 import time
 import sys
 import json
@@ -28,26 +29,22 @@ class ModbusDriverViewer(QtWidgets.QMainWindow):
 
         self.ui = ui_ModbusDriverViewer.Ui_MainWindow()
         self.ui.setupUi(self)
-        self._commands = {}
-        self.setGui()
+        # self._commands = {}
+        self.set_gui()
         self.__datas = []
-        self.__current_row_editing = None
+        self.__current_row_editing = None   # number of current editing row, overwise - None
 
         self._driver: ModbusDriver = None
         self._model = DriverModel()
         self.ui.treeView.setModel(self._model)
-        self.ui.treeView.clicked.connect(self._onClicked)
-        selectionModel = self.ui.treeView.selectionModel()
-        selectionModel.setCurrentIndex(self.ui.treeView.rootIndex(), QItemSelectionModel.Select)
+        self.ui.treeView.clicked.connect(self._on_clicked)
+        selection_model = self.ui.treeView.selectionModel()
+        selection_model.setCurrentIndex(self.ui.treeView.rootIndex(), QItemSelectionModel.Select)
         self._currentDevice = None
 
-        # self.ui.tableWidget.itemSelectionChanged.connect(self.on_selection)
-        # self.ui.tableWidget.itemChanged.connect(self.on_selection)
-        # self.ui.tableWidget.itemDoubleClicked.connect(self.on_selection)
-        self.ui.tableWidget.cellDoubleClicked.connect(self.on_selection)
-        self.ui.tableWidget.cellChanged.connect(self.on_deselection)
-
-        # self.ui.tableView.setModel(self._model)
+        # TableWidget
+        self.ui.tableWidget.cellDoubleClicked.connect(self.on_editing_begin)
+        self.ui.tableWidget.cellChanged.connect(self.on_editing_finish)
 
         # TreeViewer
         self.ui.treeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
@@ -56,30 +53,36 @@ class ModbusDriverViewer(QtWidgets.QMainWindow):
         self.ui.treeView.expanded.connect(lambda: self.ui.treeView.resizeColumnToContents(0))
 
         # Menu
-        self.ui.actionSave_As.triggered.connect(self.saveAsDialog)
-        self.ui.actionOpen.triggered.connect(self.openDialog)
+        self.ui.actionSave_As.triggered.connect(self.save_as_dialog)
+        self.ui.actionOpen.triggered.connect(self.open_dialog)
         # self.ui.actionExit.triggered.connect()
 
-    def on_selection(self, row, column):
-        print("Sell editing: {0}, {1}".format(row, column))
-        if column == 1:
+    def on_editing_begin(self, row, column):
+        """Editing of cell "value" has begun.
+
+        Sets flag of current editing cell row
+        """
+        if column == 1:     # Cell "Value"
             self.__current_row_editing = row
 
-    def on_deselection(self, row, column):
+    def on_editing_finish(self, row, column):
+        """Editing of cell "value" has finished.
+
+        |---------------------------------------------------------------|
+        | 0: Address | 1: Value | 2: Time | 3: Quality | 4: Description |
+        |---------------------------------------------------------------|
+        """
         if column == 1 and row == self.__current_row_editing:
-            print("Sell deselection: {0}, {1}".format(row, column))
             self.__current_row_editing = None
             model = self.ui.tableWidget.model()
-            # addr = 11
             value = int(model.data(self.ui.tableWidget.currentIndex()))
             addr = int(model.index(row, 0).data())
-            print("----- addr: {0}; value: {1}".format(addr, value))
             self.cmdSent.emit(addr, value)
 
     # --- Actions ---
-    def saveAsDialog(self):
+    def save_as_dialog(self):
          fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Configuration", "", "json (*.json)")
-         out_str = self._createDriverConfig(self._driver)
+         out_str = self._create_driver_config(self._driver)
          # if fileName:
          #     try:
          #         with open(fileName, 'w') as file:
@@ -88,9 +91,9 @@ class ModbusDriverViewer(QtWidgets.QMainWindow):
          #     except PermissionError:
          #        print("Error of opening file")
 
-    def openDialog(self):
+    def open_dialog(self):
         fileName, _ = QFileDialog.getOpenFileName(self, "Open file", "", "*.json (*.json)")
-        self.__loadDriverConfig(fileName)
+        self.__load_driver_config(fileName)
 
     def open_menu(self, position) -> QMenu:
         print("Open menu")
@@ -98,76 +101,43 @@ class ModbusDriverViewer(QtWidgets.QMainWindow):
 
     def create_menu(self) -> QMenu:
         menu = QMenu()
-        menu.addAction("Add..", self.__onAdd)
-        menu.addAction("Delete", self.__onRemove)
-        menu.addAction("Property", self.__onProperty)
+        menu.addAction("Add..", self.__on_add)
+        menu.addAction("Delete", self.__on_remove)
+        menu.addAction("Edit", self.__on_edit)
+        menu.addAction("Property", self.__on_property)
         # menu.addAction("Start", self._onStart)
         # menu.addAction("Stop", self._onStop)
         return menu
 
-    def setGui(self):
-        # self._commands = {
-        #     "btOpen": [2, 1],
-        #     "btClose": [2, 2],
-        #     "btStop": [2, 4],
-        # }
-        # self.ui.btOpen.clicked.connect(self.onCmdReady)
-        # self.ui.btClose.clicked.connect(self.onCmdReady)
-        # self.ui.btStop.clicked.connect(self.onCmdReady)
-        #
-        # self.ui.lb1_1.setStyleSheet(
-        #     """
-        #     QLabel {
-        #         background-color: #000;
-        #         color: yellow;
-        #         border: 3px solid green;
-        #     }
-        # """)
-
+    def set_gui(self):
+        """GUI initialization"""
         self.ui.tableWidget.setColumnWidth(0, 70)
         for row in range(self.ui.tableWidget.rowCount()):
             self.ui.tableWidget.setRowHeight(row, 5)
 
-    @QtCore.pyqtSlot()
-    def onCmdReady(self):
-        print("ModbusViewer: onCmdReade")
-        addr = 22
-        value = 777
-        self.cmdSent.emit(addr, value)
-        # sender = self.sender()
-        # name = sender.objectName()
-        # addr = 0
-        # value = 0
-        # if name in self._commands:
-        #     addr = self._commands[name][0]
-        #     value = self._commands[name][1]
-        # else:
-        #     print("No keys found")
-        # print("clicked: {0}, {1}, {2}".format(name, addr, value))
-        # self.cmdSent.emit(addr, value)
-
     @QtCore.pyqtSlot(str, Range)
-    def onDataUpdate(self, drvName: str, data: Range):
-        self._tableDataUpdate()
+    def on_data_update(self, drvName: str, data: Range):
+        self._table_data_update()
         # index = QModelIndex()
         # self.dataChanged.emit(index, index, [QtCore.Qt.DisplayRole])
 
-    def addDriver(self, drv: ModbusDriver):
+    def add_driver(self, drv: ModbusDriver):
+        """Adds new driver"""
         self._driver = drv
-        drv.dataChanged.connect(self.onDataUpdate)
+        drv.dataChanged.connect(self.on_data_update)
         self.cmdSent.connect(drv.onCmdReady)
         self._model.addDriver(drv)
         # self._model.setupModelData()
 
-    def setDriver(self, drv: ModbusDriver):
+    def set_driver(self, drv: ModbusDriver):
         self._driver = drv
-        drv.dataChanged.connect(self.onDataUpdate)
+        drv.dataChanged.connect(self.on_data_update)
         self.cmdSent.connect(drv.onCmdReady)
         self._model.removeAllDrivers()
         self._model.setDriver(drv)
 
     @QtCore.pyqtSlot(QtCore.QModelIndex)
-    def _onClicked(self, index: QtCore.QModelIndex):
+    def _on_clicked(self, index: QtCore.QModelIndex):
         model: DriverModel = None
         model = self.ui.treeView.model()
         node = model.getNodeFromIndex(index)
@@ -182,15 +152,15 @@ class ModbusDriverViewer(QtWidgets.QMainWindow):
         for data in self.__datas:
             num += len(data)
 
-        self._tableFormatUpdate(num)
-        self._tableDataUpdate()
+        self._table_format_update(num)
+        self._table_data_update()
 
-    def _tableFormatUpdate(self, num):
+    def _table_format_update(self, num):
         self.ui.tableWidget.setRowCount(num)
         for row in range(num):
             self.ui.tableWidget.setRowHeight(row, 12)
 
-    def _tableDataUpdate(self):
+    def _table_data_update(self):
         row = 0
         for i, data in enumerate(self.__datas):
             startAddr = data.address()
@@ -223,7 +193,7 @@ class ModbusDriverViewer(QtWidgets.QMainWindow):
 
                 row = row + 1
 
-    def _createDriverConfig(self, drv: ModbusDriver) -> str:
+    def _create_driver_config(self, drv: ModbusDriver) -> str:
         data = {
             "driver": "modbus1",
             "prpperty": None,
@@ -284,9 +254,9 @@ class ModbusDriverViewer(QtWidgets.QMainWindow):
 
         return out_str
 
-    def __loadDriverConfig(self, fileName: str):
+    def __load_driver_config(self, filename: str):
         data = {}
-        with open(fileName, 'r') as file:
+        with open(filename, 'r') as file:
             data = json.load(file)
 
         devices = []
@@ -318,12 +288,14 @@ class ModbusDriverViewer(QtWidgets.QMainWindow):
             devices.append(device1)
 
         drv1 = DriverCreator.create(driverName, devices)
-        self.setDriver(drv1)
+        self.set_driver(drv1)
 
     # --- Events of this class ---
     @QtCore.pyqtSlot()
-    def __onAdd(self):
-        print(self.__onAdd.__name__)
+    def __on_add(self):
+        """Adds new item to tree
+        """
+        print(self.__on_add.__name__)
         index = self.ui.treeView.selectedIndexes()[0]
         node = self._model.getNodeFromIndex(index)
         modbusItem = node.ref()
@@ -360,8 +332,9 @@ class ModbusDriverViewer(QtWidgets.QMainWindow):
                 self.ui.treeView.resizeColumnToContents(0)
 
     @QtCore.pyqtSlot()
-    def __onRemove(self):
-        print(self.__onRemove.__name__)
+    def __on_remove(self):
+        """Deletes item from tree"""
+        print(self.__on_remove.__name__)
         index = self.ui.treeView.selectedIndexes()[0]
 
         node = self._model.getNodeFromIndex(index)
@@ -400,12 +373,19 @@ class ModbusDriverViewer(QtWidgets.QMainWindow):
         self.ui.treeView.resizeColumnToContents(0)
 
     @QtCore.pyqtSlot()
-    def __onStart(self):
+    def __on_edit(self):
+        """Changes tree item's settings"""
+        DummyMessage().exec()
+
+    @QtCore.pyqtSlot()
+    def __on_start(self):
+        """Starts polling the device"""
         pass
 
     @QtCore.pyqtSlot()
-    def __onStop(self):
-        print(self.__onStop.__name__)
+    def __on_stop(self):
+        """Stops polling the device"""
+        print(self.__on_stop.__name__)
         index = self.ui.treeView.selectedIndexes()[0]
 
         node = self._model.getNodeFromIndex(index)
@@ -414,12 +394,12 @@ class ModbusDriverViewer(QtWidgets.QMainWindow):
         device.stop()
 
     @QtCore.pyqtSlot()
-    def __onProperty(self):
-        print(self.__onProperty.__name__)
-        index = self.ui.treeView.selectedIndexes()[0]
-
-        node = self._model.getNodeFromIndex(index)
-        device = node.ref()
+    def __on_property(self):
+        """Show info about device"""
+        # index = self.ui.treeView.selectedIndexes()[0]
+        # node = self._model.getNodeFromIndex(index)
+        # device = node.ref()
+        DummyMessage().exec()
 
 
 def main(argv):
@@ -445,7 +425,7 @@ def main(argv):
     drv1 = DriverCreator.create("modbus", devices)
 
     viewer = ModbusDriverViewer()
-    viewer.addDriver(drv1)
+    viewer.add_driver(drv1)
     viewer.show()
 
     return app.exec()

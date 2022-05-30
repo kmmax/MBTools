@@ -23,7 +23,7 @@ def main(argv):
     drv1 = DriverCreator.create("modbus", devices)
 
     viewer = ModbusDriverViewer()
-    viewer.addDriver(drv1)
+    viewer.add_driver(drv1)
     viewer.show()
 
     return app.exec()

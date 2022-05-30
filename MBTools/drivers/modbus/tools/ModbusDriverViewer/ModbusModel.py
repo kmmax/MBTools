@@ -222,7 +222,6 @@ class Window(QtWidgets.QWidget):
 
         self.viewA1.setSelectionModel(self.viewA.selectionModel())
 
-
         self.show()
 
     def onClick(self, index):

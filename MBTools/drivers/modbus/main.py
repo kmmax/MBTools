@@ -29,7 +29,7 @@ def main(argv):
     cfg.del_addresses(dev1, [4, 3])
 
     viewer = ModbusDriverViewer()
-    viewer.addDriver(drv1)
+    viewer.add_driver(drv1)
     viewer.show()
 
     return app.exec()

@@ -211,7 +211,7 @@ class OIServerViewer(QtWidgets.QMainWindow):
         """ Starts Modbus Driver Viewer """
         mbdrv = self._oi.driver()
         viewer = drv.ModbusDriverViewer()
-        viewer.addDriver(mbdrv)
+        viewer.add_driver(mbdrv)
         viewer.show()
 
     @QtCore.pyqtSlot()
