@@ -31,6 +31,7 @@ class ModbusDriverViewer(QtWidgets.QMainWindow):
         self._commands = {}
         self.setGui()
         self.__datas = []
+        self.__current_row_editing = None
 
         self._driver: ModbusDriver = None
         self._model = DriverModel()
@@ -40,7 +41,13 @@ class ModbusDriverViewer(QtWidgets.QMainWindow):
         selectionModel.setCurrentIndex(self.ui.treeView.rootIndex(), QItemSelectionModel.Select)
         self._currentDevice = None
 
-        self.ui.tableView.setModel(self._model)
+        # self.ui.tableWidget.itemSelectionChanged.connect(self.on_selection)
+        # self.ui.tableWidget.itemChanged.connect(self.on_selection)
+        # self.ui.tableWidget.itemDoubleClicked.connect(self.on_selection)
+        self.ui.tableWidget.cellDoubleClicked.connect(self.on_selection)
+        self.ui.tableWidget.cellChanged.connect(self.on_deselection)
+
+        # self.ui.tableView.setModel(self._model)
 
         # TreeViewer
         self.ui.treeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
@@ -52,6 +59,22 @@ class ModbusDriverViewer(QtWidgets.QMainWindow):
         self.ui.actionSave_As.triggered.connect(self.saveAsDialog)
         self.ui.actionOpen.triggered.connect(self.openDialog)
         # self.ui.actionExit.triggered.connect()
+
+    def on_selection(self, row, column):
+        print("Sell editing: {0}, {1}".format(row, column))
+        if column == 1:
+            self.__current_row_editing = row
+
+    def on_deselection(self, row, column):
+        if column == 1 and row == self.__current_row_editing:
+            print("Sell deselection: {0}, {1}".format(row, column))
+            self.__current_row_editing = None
+            model = self.ui.tableWidget.model()
+            # addr = 11
+            value = int(model.data(self.ui.tableWidget.currentIndex()))
+            addr = int(model.index(row, 0).data())
+            print("----- addr: {0}; value: {1}".format(addr, value))
+            self.cmdSent.emit(addr, value)
 
     # --- Actions ---
     def saveAsDialog(self):
@@ -83,23 +106,23 @@ class ModbusDriverViewer(QtWidgets.QMainWindow):
         return menu
 
     def setGui(self):
-        self._commands = {
-            "btOpen": [2, 1],
-            "btClose": [2, 2],
-            "btStop": [2, 4],
-        }
-        self.ui.btOpen.clicked.connect(self.onCmdReady)
-        self.ui.btClose.clicked.connect(self.onCmdReady)
-        self.ui.btStop.clicked.connect(self.onCmdReady)
-
-        self.ui.lb1_1.setStyleSheet(
-            """
-            QLabel {
-                background-color: #000;
-                color: yellow;
-                border: 3px solid green;
-            }
-        """)
+        # self._commands = {
+        #     "btOpen": [2, 1],
+        #     "btClose": [2, 2],
+        #     "btStop": [2, 4],
+        # }
+        # self.ui.btOpen.clicked.connect(self.onCmdReady)
+        # self.ui.btClose.clicked.connect(self.onCmdReady)
+        # self.ui.btStop.clicked.connect(self.onCmdReady)
+        #
+        # self.ui.lb1_1.setStyleSheet(
+        #     """
+        #     QLabel {
+        #         background-color: #000;
+        #         color: yellow;
+        #         border: 3px solid green;
+        #     }
+        # """)
 
         self.ui.tableWidget.setColumnWidth(0, 70)
         for row in range(self.ui.tableWidget.rowCount()):
@@ -176,26 +199,27 @@ class ModbusDriverViewer(QtWidgets.QMainWindow):
             registers = data.registers()
             # print("-> {0}: ".format(data))
             for j, value in enumerate(registers):
-                addr = startAddr+j
+                if row != self.__current_row_editing:
+                    addr = startAddr+j
 
-                item = QtWidgets.QTableWidgetItem(str(addr))
-                # item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignHCenter)
-                item.setTextAlignment(QtCore.Qt.AlignHCenter)
-                self.ui.tableWidget.setItem(row, 0, item)
+                    item = QtWidgets.QTableWidgetItem(str(addr))
+                    # item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignHCenter)
+                    item.setTextAlignment(QtCore.Qt.AlignHCenter)
+                    self.ui.tableWidget.setItem(row, 0, item)
 
-                item = QtWidgets.QTableWidgetItem(str(value))
-                # item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignHCenter)
-                item.setTextAlignment(QtCore.Qt.AlignHCenter)
-                self.ui.tableWidget.setItem(row, 1, item)
+                    item = QtWidgets.QTableWidgetItem(str(value))
+                    # item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignHCenter)
+                    item.setTextAlignment(QtCore.Qt.AlignHCenter)
+                    self.ui.tableWidget.setItem(row, 1, item)
 
-                item = QtWidgets.QTableWidgetItem(time.strftime("%H:%M:%S", timestamp))
-                # item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignHCenter)
-                item.setTextAlignment(QtCore.Qt.AlignHCenter)
-                self.ui.tableWidget.setItem(row, 2, item)
+                    item = QtWidgets.QTableWidgetItem(time.strftime("%H:%M:%S", timestamp))
+                    # item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignHCenter)
+                    item.setTextAlignment(QtCore.Qt.AlignHCenter)
+                    self.ui.tableWidget.setItem(row, 2, item)
 
-                item = QtWidgets.QTableWidgetItem(QualityEnumStr[quality])
-                item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignHCenter)
-                self.ui.tableWidget.setItem(row, 3, item)
+                    item = QtWidgets.QTableWidgetItem(QualityEnumStr[quality])
+                    item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignHCenter)
+                    self.ui.tableWidget.setItem(row, 3, item)
 
                 row = row + 1
 
