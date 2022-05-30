@@ -1,4 +1,12 @@
 # -*- coding: utf-8 -*-
+# -----------------------------------------------------------
+# Main module
+#
+# (C) 2021 Maxim Kozyakov
+# Released under GNU Public License (MIT)
+# email kmmax@yandex.ru
+# -----------------------------------------------------------
+
 import os
 import sys
 sys.path.append(os.path.join(sys.path[0], "../"))

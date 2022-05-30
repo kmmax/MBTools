@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
 # -----------------------------------------------------------
 # This module contains Model of Data
 # - tags
-# - devices (correspon
+# - devices
 # - drivers
 #
 # (C) 2021 Maxim Kozyakov, Voronezh, Russia

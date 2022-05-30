@@ -1,4 +1,11 @@
 # -*- coding: utf-8 -*-
+# -----------------------------------------------------------
+# Input/Output server
+#
+# (C) 2021 Maxim Kozyakov
+# Released under GNU Public License (MIT)
+# email kmmax@yandex.ru
+# -----------------------------------------------------------
 from PyQt5 import QtWidgets, QtCore
 import sys
 import numpy as np

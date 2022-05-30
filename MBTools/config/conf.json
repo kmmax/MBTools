@@ -1,33 +1,28 @@
 {
   "devices": [
-    { "name": "dev1", "protocol": "modbus", "ip": "127.0.0.1", "port": 30502 },
-    { "name": "dev2", "protocol": "modbus", "ip": "127.0.0.1", "port": 502 },
-    { "name": "dev3", "protocol": "modbus", "ip": "127.0.0.1", "port": 20502 }
+    { "name": "dev1", "protocol": "modbus", "ip": "127.0.0.1", "port": 10502 },
+    { "name": "dev2", "protocol": "modbus", "ip": "127.0.0.1", "port": 20502 }
   ],
 
   "tags": [
-    {"name": "TAG1_REAL", "type": "REAL", "device": "dev1", "address": 100, "comment" : "Tag1 Real Type" },
-    {"name": "TAG1_WORD", "type": "WORD", "device": "dev1", "address": 102, "comment" : "Tag2 WORD Type" },
-    {"name": "TAG1_BOOL_0", "type": "BOOL", "device": "dev1", "address": 102, "bit": 0, "comment" : "Tag2 BOOL: bit0 from Tag2" },
-    {"name": "TAG1_BOOL_1", "type": "BOOL", "device": "dev1", "address": 102, "bit": 1, "comment" : "Tag2 BOOL: bit1 from Tag2" },
-    {"name": "TAG1_BOOL_2", "type": "BOOL", "device": "dev1", "address": 102, "bit": 2, "comment" : "Tag2 BOOL: bit2 from Tag2" },
-    {"name": "TAG1_BOOL_3", "type": "BOOL", "device": "dev1", "address": 102, "bit": 3, "comment" : "Tag2 BOOL: bit3 from Tag2" },
-    {"name": "TAG1_BOOL_4", "type": "BOOL", "device": "dev1", "address": 102, "bit": 4, "comment" : "Tag2 BOOL: bit4 from Tag2" },
-    {"name": "TAG1_BOOL_5", "type": "BOOL", "device": "dev1", "address": 102, "bit": 5, "comment" : "Tag2 BOOL: bit5 from Tag2" },
-    {"name": "TAG1_BOOL_6", "type": "BOOL", "device": "dev1", "address": 102, "bit": 6, "comment" : "Tag2 BOOL: bit6 from Tag2" },
-    {"name": "TAG1_BOOL_7", "type": "BOOL", "device": "dev1", "address": 102, "bit": 7, "comment" : "Tag2 BOOL: bit7 from Tag2" },
-    {"name": "TAG1_INT", "type": "INT", "device": "dev1", "address": 102, "comment" : "Tag2 INT: from Tag2" },
+    {"name": "TAG00", "type": "REAL", "device": "dev1", "address": 10, "comment" : "dev1: Real tag registers with addresses 10, 11" },
+    {"name": "TAG01", "type": "WORD", "device": "dev1", "address": 10, "comment" : "dev1: Word tag: register with address 10" },
+    {"name": "TAG02", "type": "WORD", "device": "dev1", "address": 11, "comment" : "dev1: Word tag: register with address 11" },
+    {"name": "TAG03", "type": "INT",  "device": "dev1", "address": 10, "comment" : "dev1: Int tag: register with address 10" },
+    {"name": "TAG04", "type": "INT",  "device": "dev1", "address": 11, "comment" : "dev1: Int tag: register with address 11" },
+    {"name": "TAG05", "type": "BOOL", "device": "dev1", "address": 10, "bit": 0, "comment" : "dev1: Bool tag with address 20.0" },
+    {"name": "TAG06", "type": "BOOL", "device": "dev1", "address": 10, "bit": 1, "comment" : "dev1: Bool tag with address 20.1" },
+    {"name": "TAG07", "type": "BOOL", "device": "dev1", "address": 10, "bit": 2, "comment" : "dev1: Bool tag with address 20.2" },
+    {"name": "TAG08", "type": "BOOL", "device": "dev1", "address": 10, "bit": 3, "comment" : "dev1: Bool tag with address 20.3" },
 
-    {"name": "TAG2_REAL", "type": "REAL", "device": "dev2", "address": 100, "comment" : "Tag1 Real Type" },
-    {"name": "TAG2_WORD", "type": "WORD", "device": "dev2", "address": 102, "comment" : "Tag2 WORD Type" },
-    {"name": "TAG2_BOOL_0", "type": "BOOL", "device": "dev2", "address": 102, "bit": 0, "comment" : "Tag2 BOOL: bit0 from Tag2" },
-    {"name": "TAG2_BOOL_1", "type": "BOOL", "device": "dev2", "address": 102, "bit": 1, "comment" : "Tag2 BOOL: bit1 from Tag2" },
-    {"name": "TAG2_BOOL_2", "type": "BOOL", "device": "dev2", "address": 102, "bit": 2, "comment" : "Tag2 BOOL: bit2 from Tag2" },
-    {"name": "TAG2_BOOL_3", "type": "BOOL", "device": "dev2", "address": 102, "bit": 3, "comment" : "Tag2 BOOL: bit3 from Tag2" },
-    {"name": "TAG2_BOOL_4", "type": "BOOL", "device": "dev2", "address": 102, "bit": 4, "comment" : "Tag2 BOOL: bit4 from Tag2" },
-    {"name": "TAG2_BOOL_5", "type": "BOOL", "device": "dev2", "address": 102, "bit": 5, "comment" : "Tag2 BOOL: bit5 from Tag2" },
-    {"name": "TAG2_BOOL_6", "type": "BOOL", "device": "dev2", "address": 102, "bit": 6, "comment" : "Tag2 BOOL: bit6 from Tag2" },
-    {"name": "TAG2_BOOL_7", "type": "BOOL", "device": "dev2", "address": 102, "bit": 7, "comment" : "Tag2 BOOL: bit7 from Tag2" },
-    {"name": "TAG2_INT", "type": "INT", "device": "dev2", "address": 102, "comment" : "Tag2 INT: from Tag2" }
+    {"name": "TAG00", "type": "REAL", "device": "dev2", "address": 10, "comment" : "dev2: Real tag registers with addresses 10, 11" },
+    {"name": "TAG01", "type": "WORD", "device": "dev2", "address": 10, "comment" : "dev2: Word tag: register with address 10" },
+    {"name": "TAG02", "type": "WORD", "device": "dev2", "address": 11, "comment" : "dev2: Word tag: register with address 11" },
+    {"name": "TAG03", "type": "INT",  "device": "dev2", "address": 10, "comment" : "dev2: Int tag: register with address 10" },
+    {"name": "TAG04", "type": "INT",  "device": "dev2", "address": 11, "comment" : "dev2: Int tag: register with address 11" },
+    {"name": "TAG05", "type": "BOOL", "device": "dev2", "address": 10, "bit": 0, "comment" : "dev2: Bool tag with address 20.0" },
+    {"name": "TAG06", "type": "BOOL", "device": "dev2", "address": 10, "bit": 1, "comment" : "dev2: Bool tag with address 20.1" },
+    {"name": "TAG07", "type": "BOOL", "device": "dev2", "address": 10, "bit": 2, "comment" : "dev2: Bool tag with address 20.2" },
+    {"name": "TAG08", "type": "BOOL", "device": "dev2", "address": 10, "bit": 3, "comment" : "dev2: Bool tag with address 20.3" }
   ]
 }

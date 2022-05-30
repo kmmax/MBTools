@@ -1,8 +1,8 @@
 from PyQt5 import QtWidgets, uic
 import sys
 
-class MainWindow(QtWidgets.QDialog):
 
+class MainWindow(QtWidgets.QDialog):
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
 
@@ -15,6 +15,7 @@ def main():
     main = MainWindow()
     main.show()
     sys.exit(app.exec_())
+
 
 if __name__ == '__main__':
     main()
