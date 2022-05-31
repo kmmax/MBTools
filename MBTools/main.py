@@ -21,12 +21,12 @@ from MBTools.oiserver.OIServerConfigure import JsonConfigure, create_config, For
 def main(argv):
     app = QtWidgets.QApplication(sys.argv)
 
-    cur_path = os.path.dirname(__file__)
-    new_path = os.path.relpath("../config/qss.css", cur_path)
-    print(new_path)
-    print("sys path:")
-    for path in sys.path:
-        print("\t" + path)
+    # cur_path = os.path.dirname(__file__)
+    # new_path = os.path.relpath("../config/qss.css", cur_path)
+    # print(new_path)
+    # print("sys path:")
+    # for path in sys.path:
+    #     print("\t" + path)
 
     io = IOServer()
     oiviewer = oiv.OIServerViewer()
