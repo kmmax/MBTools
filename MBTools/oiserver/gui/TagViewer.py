@@ -70,7 +70,6 @@ class TagViewer(QtWidgets.QMainWindow):
             self.ui.tableWidget.clear()
         self.onDataUpdate()
 
-
     @QtCore.pyqtSlot()
     def onDataUpdate(self):
         """

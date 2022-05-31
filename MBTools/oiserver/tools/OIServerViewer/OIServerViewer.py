@@ -6,7 +6,6 @@ from PyQt5.QtWidgets import QApplication, QStyledItemDelegate, QTableWidget, QDi
 from PyQt5.QtGui import QColor, QPalette, QImage, QPixmap
 from PyQt5.QtCore import Qt, pyqtSignal
 
-# from MBTools.utilites.Messages import DummyMessage
 from MBTools.oiserver.OIServer import IOServer
 from MBTools.oiserver.DataModel import DataModel
 from MBTools.oiserver.Tag import Tag, TagType
@@ -90,7 +89,6 @@ class OIServerViewer(QtWidgets.QMainWindow):
 
         # GUI
         self._ui.tableWidget.setItemDelegate(self.__edit_delegate)
-
         self._ui.tableWidget.horizontalHeaderItem(0).setTextAlignment(Qt.AlignCenter)
         # self._ui.tableWidget.setColumnHidden(0, True)
 
@@ -165,7 +163,7 @@ class OIServerViewer(QtWidgets.QMainWindow):
         self._ui.actionAbout.triggered.connect(lambda: DummyMessage().exec())
         self._ui.actionAppereance.triggered.connect(lambda: DummyMessage().exec())
         self._ui.actionNew.triggered.connect(lambda: DummyMessage().exec())
-        self._ui.actionSave_As.triggered.connect(lambda: DummyMessage().exec())
+        self._ui.actionSave_As.triggered.connect(self.save_as)
         self._ui.actionClose.triggered.connect(lambda: DummyMessage().exec())
         self._ui.actionExit.triggered.connect(lambda: DummyMessage().exec())
 
@@ -176,12 +174,29 @@ class OIServerViewer(QtWidgets.QMainWindow):
 
     # ----- Menu actions -----
     def open_file(self):
-        filename, ok = QtWidgets.QFileDialog.getOpenFileName(self, "Choose files", ".", "*.json")
+        """Open new configuraton file
+
+        You will be prompted to save the old configuration if it exists and has not been saved.
+        """
+
+        # Old configuration saving (if exists)
+        if self._oi.config():
+            ret = QtWidgets.QMessageBox.question(self, "", "The old config is there. Do you want save it before",
+                                                 QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+            if ret == QtWidgets.QMessageBox.Yes:
+                self.save_as()
+
+        # Opening new config file
+        filename, ok = QtWidgets.QFileDialog.getOpenFileName(self, "Open config files", ".", "*.json")
         conf = JsonConfigure()
         conf.read_config(filename)
-        # conf.read_model_config(filename)
         self._oi.set_config(conf)
         self.updateGui()
+
+    def save_as(self):
+        filename, ok = QtWidgets.QFileDialog.getSaveFileName(self, "Save config file", ".", "*.json")
+        conf = self._oi.config()
+        conf.write_config(filename)
 
     def show_context_menu(self, point):
         self.__menu.exec(self.mapToGlobal(point))
