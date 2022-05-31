@@ -29,9 +29,6 @@ def main(argv):
         print("\t" + path)
 
     io = IOServer()
-    #conf = create_config(FormatName.JSON, "config/conf.json")
-    #io.set_config(conf)
-
     oiviewer = oiv.OIServerViewer()
     oiviewer.setOiServer(io)
 

@@ -13,7 +13,6 @@
   <property name="font">
    <font>
     <pointsize>10</pointsize>
-    <weight>75</weight>
     <bold>true</bold>
    </font>
   </property>
@@ -27,12 +26,11 @@
       <property name="font">
        <font>
         <pointsize>9</pointsize>
-        <weight>50</weight>
         <bold>false</bold>
        </font>
       </property>
       <property name="rowCount">
-       <number>5</number>
+       <number>1</number>
       </property>
       <property name="columnCount">
        <number>8</number>
@@ -43,10 +41,6 @@
       <attribute name="verticalHeaderVisible">
        <bool>false</bool>
       </attribute>
-      <row/>
-      <row/>
-      <row/>
-      <row/>
       <row/>
       <column>
        <property name="text">
@@ -98,7 +92,7 @@
      <x>0</x>
      <y>0</y>
      <width>1046</width>
-     <height>21</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
