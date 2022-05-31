@@ -13,6 +13,7 @@ DEFAULT_IP = "127.0.0.1"      # default ip address of modbus server
 DEFAULT_PORT = 502            # default port of modbus server
 # NUMBER = 50                 # number of registers
 REQUEST_DELAY = 0.5           # default delay between requests, sec
+# REQUEST_DELAY = 5.0           # default delay between requests, sec
 
 
 def overrides(interface_class):

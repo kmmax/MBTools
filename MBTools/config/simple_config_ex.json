@@ -1,0 +1,39 @@
+{
+    "devices": [
+        {
+            "name": "dev1",
+            "protocol": "modbus",
+            "ip": "127.0.0.1",
+            "port": 10502
+        },
+        {
+            "name": "dev1",
+            "protocol": "modbus",
+            "ip": "127.0.0.1",
+            "port": 10502
+        }
+    ],
+    "tags": [
+        {
+            "name": "TAG01",
+            "type": "INT",
+            "device": "dev1",
+            "address": 10,
+            "comment": "dev1: Int tag: register with address 10"
+        },
+        {
+            "name": "TAG02",
+            "type": "INT",
+            "device": "dev1",
+            "address": 11,
+            "comment": "dev1: Int tag: register with address 11"
+        },
+        {
+            "name": "TAG03",
+            "type": "INT",
+            "device": "dev1",
+            "address": 12,
+            "comment": "Added tag"
+        }
+    ]
+}

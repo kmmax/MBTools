@@ -76,7 +76,7 @@ class DataModel(IDataModel, set):
         super().__init__()
         self.__hash_tags = DataModel.__get_hash_from_tags(tags)
         self.__drivers = self.__get_drivers_from_tags()
-        self.__devices = self.__get_drivers_from_tags()
+        self.__devices = self.__get_devices_from_tags()
 
     # ---------- IDataModel overloaded ---------
     def drivers(self):

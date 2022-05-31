@@ -191,19 +191,23 @@ class OIServerViewer(QtWidgets.QMainWindow):
         conf = JsonConfigure()
         conf.read_config(filename)
         self._oi.set_config(conf)
-        self.updateGui()
+
+        # new code
+        configurator = self._oi.configurator()
+        configurator.read_model_config(filename)
+        self.update_gui()
 
     def save_as(self):
         filename, ok = QtWidgets.QFileDialog.getSaveFileName(self, "Save config file", ".", "*.json")
-        conf = self._oi.config()
-        conf.write_config(filename)
+        configurator = self._oi.configurator()
+        configurator.write_model_config(filename)
 
     def show_context_menu(self, point):
         self.__menu.exec(self.mapToGlobal(point))
 
     def onFilterQualityTriggered(self):
         self.__flags.quality_filter = not self.__flags.quality_filter
-        self.updateGui()
+        self.update_gui()
 
     def setOiServer(self, oi: IOServer):
         if oi is None:
@@ -215,7 +219,7 @@ class OIServerViewer(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot()
     def onDataChanged(self):
-        self.updateGui()
+        self.update_gui()
 
     @QtCore.pyqtSlot()
     def onConfigChanged(self):
@@ -265,22 +269,85 @@ class OIServerViewer(QtWidgets.QMainWindow):
                           type_,
                           address=addr_,
                           comment=comment_)
+
+            self._oi.model().add(new_tag)
+
             tags.append(new_tag)
             self._oi.add_tags(tags)
-            self.updateGui()
+            self.update_gui()
 
-    def updateGui(self):
+    # def update_gui(self):
+    #     # print("updateGui")
+    #     if self._oi:
+    #         # self._ui.tableWidget.clear()
+    #
+    #         # Update table delegate
+    #         types_names = StrFromTagType.values()
+    #         devices_names = [dev.name() for dev in self._oi.devices()]
+    #         self.__edit_delegate.set_devices_names(devices_names)
+    #         self.__edit_delegate.set_types_names(types_names)
+    #
+    #         tags = self._oi.tags()
+    #         if self.__flags.quality_filter:
+    #             tags = [tag for tag in tags if QualityEnum.GOOD == tag.quality]
+    #
+    #         # print(tags)
+    #         """
+    #         |-------------------------------------------------------------------|
+    #         | Name | Value | Quality | Device | Address | Type | Time | Comment |
+    #         |-------------------------------------------------------------------|
+    #         """
+    #         self._ui.tableWidget.setRowCount(len(tags))
+    #         for i, tag in enumerate(tags):
+    #
+    #             # Name
+    #             item = QtWidgets.QTableWidgetItem(tag.name)
+    #             # item.setTextAlignment(QtCore.Qt.AlignCenter)
+    #             self._ui.tableWidget.setItem(i, 0, item)
+    #             # Value
+    #             item = QtWidgets.QTableWidgetItem(str(tag.value))
+    #             item.setTextAlignment(QtCore.Qt.AlignCenter)
+    #             self._ui.tableWidget.setItem(i, 1, item)
+    #             # Quality
+    #             item = QtWidgets.QTableWidgetItem(str(tag.quality).replace("QualityEnum.", ''))
+    #             item.setTextAlignment(QtCore.Qt.AlignCenter)
+    #             self._ui.tableWidget.setItem(i, 2, item)
+    #             # Device
+    #             item = QtWidgets.QTableWidgetItem(tag.device.objectName())
+    #             item.setTextAlignment(QtCore.Qt.AlignCenter)
+    #             self._ui.tableWidget.setItem(i, 3, item)
+    #             # Address
+    #             addr = str(tag.address)
+    #             if TagType.BOOL == tag.type:
+    #                 addr += ".{0}".format(tag.bit_number)
+    #             # item = QtWidgets.QTableWidgetItem(str(tag.address))
+    #             item = QtWidgets.QTableWidgetItem(addr)
+    #             item.setTextAlignment(QtCore.Qt.AlignCenter)
+    #             self._ui.tableWidget.setItem(i, 4, item)
+    #             # Type
+    #             item = QtWidgets.QTableWidgetItem(str(tag.type).replace("TagType.", ''))
+    #             item.setTextAlignment(QtCore.Qt.AlignCenter)
+    #             self._ui.tableWidget.setItem(i, 5, item)
+    #             # Time
+    #             item = QtWidgets.QTableWidgetItem(self.timeFormat(tag.time))
+    #             item.setTextAlignment(QtCore.Qt.AlignCenter)
+    #             self._ui.tableWidget.setItem(i, 6, QtWidgets.QTableWidgetItem(item))
+    #             # Comment
+    #             self._ui.tableWidget.setItem(i, 7, QtWidgets.QTableWidgetItem(tag.comment))
+    #     # print("end of update GUI")
+
+    def update_gui(self):
         # print("updateGui")
         if self._oi:
             # self._ui.tableWidget.clear()
 
             # Update table delegate
             types_names = StrFromTagType.values()
-            devices_names = [dev.name() for dev in self._oi.devices()]
+            devices_names = [dev.name() for dev in self._oi.model().devices()]
             self.__edit_delegate.set_devices_names(devices_names)
             self.__edit_delegate.set_types_names(types_names)
 
-            tags = self._oi.tags()
+            tags = self._oi.model().tags()
             if self.__flags.quality_filter:
                 tags = [tag for tag in tags if QualityEnum.GOOD == tag.quality]
 
@@ -328,7 +395,6 @@ class OIServerViewer(QtWidgets.QMainWindow):
                 # Comment
                 self._ui.tableWidget.setItem(i, 7, QtWidgets.QTableWidgetItem(tag.comment))
         # print("end of update GUI")
-
     def timeFormat(self, time):
         str_time = ''
         if time:

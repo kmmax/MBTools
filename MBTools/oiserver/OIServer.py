@@ -83,7 +83,7 @@ class IOServer(QtCore.QObject):
             #     self.__drv.delDevice(dev)
         else:
             self.__drv = DriverCreator.create("modbus")
-            self.__drv.dataChanged.connect(self.__onDataUpdated)
+            self.__drv.dataChanged.connect(self.__on_tags_update)
             self.__drv.rangeNumberChanged.connect(self.__onRangeNumberChanged)
 
         self.__devices.clear()
@@ -172,7 +172,7 @@ class IOServer(QtCore.QObject):
 
         """We find numbers ranges for each device"""
         for device_addrs in addresses:
-            range_ = IOServer.__calculateRanges(100, device_addrs)
+            range_ = IOServer.__calculate_ranges(100, device_addrs)
             ranges.append(range_)
 
         """Configuring devices by setting numbers ranges"""
@@ -203,7 +203,7 @@ class IOServer(QtCore.QObject):
 
     # --- private ---
     @staticmethod
-    def __calculateRanges(max_len: int, addresses: list) -> dict:
+    def __calculate_ranges(max_len: int, addresses: list) -> dict:
         """ Method calculates ranges for modbus driver """
         if len(addresses) < 1:
             return None
@@ -229,7 +229,17 @@ class IOServer(QtCore.QObject):
         return ranges
 
     @staticmethod
-    def __regsToValue(regs: [], type_: TagType, bit_number=None):
+    def __regs_to_value(regs: [], type_: TagType, bit_number=None):
+        """Converts set of registers to value accoding TagType
+
+        Keyword arguments:
+            regs -- the set of registers for representing as value
+            type_ -- format of value
+            bit_number - number bit in register (for BOOL type only)
+
+        Returns:
+            Value which represents this set registers. If error when None
+        """
         if regs is None or type_ is None:
             return None
 
@@ -258,28 +268,40 @@ class IOServer(QtCore.QObject):
             return bool(output[bit_number])
 
     @QtCore.pyqtSlot(str, Range)
-    def __onDataUpdated(self, dev_name, range_):
-        for tag in self.__tags:
+    def __on_tags_update(self, dev_name: str, range_: Range):
+        """Updates set of tags by using dev/range from ModbusDriver
+
+        Keyword arguments:
+            dev_name -- name of device (as string)
+            range_ -- range of registers
+        """
+
+        for tag in self.__model.tags():
             address = tag.address
             if range_.isAddressExists(address):
                 sz = TagTypeSize[tag.type]
                 regs = range_.reristersNum(address, sz)
                 if dev_name == tag.device.name():
                     if TagType.BOOL == tag.type:
-                        tag.value = IOServer.__regsToValue(regs, tag.type, tag.bit_number)
+                        tag.value = IOServer.__regs_to_value(regs, tag.type, tag.bit_number)
                     else:
-                        tag.value = IOServer.__regsToValue(regs, tag.type, tag.bit_number)
+                        tag.value = IOServer.__regs_to_value(regs, tag.type, tag.bit_number)
                     tag.quality = range_.quality()
                     tag.time = range_.time()
-            # print(tag)
 
         self.dataChanged.emit()
+        print(self.__model)
 
     @QtCore.pyqtSlot()
     def __onRangeNumberChanged(self):
-        for i in range(len(self.__tags)):
-            if not self.__drv.isAddressExists(self.__tags[i].address):
-                self.__tags[i].quality = QualityEnum.NOT_CONFIGURED
+        # for i in range(len(self.__tags)):
+        #     if not self.__drv.isAddressExists(self.__tags[i].address):
+        #         self.__tags[i].quality = QualityEnum.NOT_CONFIGURED
+
+        tags = self.__model.tags()
+        for i in range(len(tags)):
+            if not self.__drv.isAddressExists(tags[i].address):
+                tags[i].quality = QualityEnum.NOT_CONFIGURED
 
 
 def main(argv):
