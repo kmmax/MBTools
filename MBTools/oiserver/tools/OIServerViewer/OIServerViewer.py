@@ -111,7 +111,7 @@ class OIServerViewer(QtWidgets.QMainWindow):
         """)
         # self._ui.tableWidget.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
         self._ui.actionDriver.triggered.connect(self.onDriverViewerShow)
-        self._ui.actionAdd_Tag.triggered.connect(self.onDlgAddTagShow)
+        self._ui.actionAdd_Tag.triggered.connect(self.on_add_tag)
         self._ui.actionShow_only_GOOD_quality.triggered.connect(self.onFilterQualityTriggered)
 
         # self._dlg = DlgAddTag(self)
@@ -230,8 +230,10 @@ class OIServerViewer(QtWidgets.QMainWindow):
         viewer.show()
 
     @QtCore.pyqtSlot()
-    def onDlgAddTagShow(self):
+    def on_add_tag(self):
         """ Show dialog for adding tag """
+
+        print("--------- add tag -----------")
 
         # Devices names for choosing in dialog window
         devices = [dev.name() for dev in self._oi.devices()]
@@ -245,7 +247,7 @@ class OIServerViewer(QtWidgets.QMainWindow):
             #     list_item = "{0}: {1}".format(k, v)
             #     print(list_item)
             name_ = status["name"]
-            dev_name  = status["dev"]
+            dev_name = status["dev"]
             addr_: int = int(status["addr"])
             type_ = TagTypeFromStr[status["type"]]
             comment_ = status["comment"]
