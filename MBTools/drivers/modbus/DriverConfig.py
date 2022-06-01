@@ -77,6 +77,9 @@ class AbcDriverConf(object):
         @param[in] addresses - полный перечень адресов устройства
         """
         ranges = ModbusCalculator.split_numbers(addresses, self.__MAX_NUMBERS_IN_RANGE)
+        print("=== ranges 1 ===")
+        print(ranges)
+        print("=== ranges 2 ===")
         dev.delAllRanges()
         for i, rng in enumerate(ranges):
             dev.addRange(rng[0], rng[1] - rng[0] + 1, "range{}".format(i))
