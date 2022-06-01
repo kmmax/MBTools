@@ -14,7 +14,7 @@ import cProfile
 
 from MBTools.oiserver.Tag import Tag, TagType
 from MBTools.drivers.modbus.ModbusDriver import *
-from MBTools.drivers.modbus.ModbusDriver import DriverCreator, DeviceCreator
+# from MBTools.drivers.modbus.ModbusDriver import DriverCreator, DeviceCreator
 from abc import ABC, abstractmethod
 
 
@@ -37,8 +37,13 @@ class IDataModel2(ABC):
         pass
 
     @abstractmethod
-    def add_device(self, dev: Device) -> None:
+    def add_device(self, name: str, **kwargs):
         """Adds new device"""
+        pass
+
+    @abstractmethod
+    def add_tag(self, tagname: str, **kwargs):
+        """Adds new tag"""
         pass
 
     @abstractmethod
@@ -57,7 +62,7 @@ class IDataModel2(ABC):
         pass
 
     @abstractmethod
-    def tags_by_device(self, device: Device) -> list:
+    def tags_in_device(self, device: Device) -> list:
         """Returns the tags associated with this device """
         pass
 
@@ -89,35 +94,14 @@ class DataModel2(IDataModel2, set):
         return self.__driver
 
     def devices(self):
+        """Returns all devices"""
         return self.__devices
 
     def tags(self):
+        """Returns all tags"""
         return self.__tags
 
-    def tags_by_device(self, device: Device) -> list:
-        """Returns tags corresponds with the device """
-        # return [tag for tag in self.__hash_tags.values() if device.name() == tag.device.name()]
-        pass
-
-    def find_tag_by_name(self, tagname: str) -> Tag:
-        """Finds tag by name and return it, if tag not exists return None """
-        # assert tagname
-        # key = hash(tagname)
-        # tag = self.__hash_tags.get(key)
-        # return tag
-        return None
-
-    def find_device_by_name(self, devname: str) -> Device:
-        for dev in self.__devices:
-            if dev.name() == devname:
-                return dev
-        return None
-
-    # def add_device(self, dev: Device) -> None:
-    #     if dev not in self.__devices:
-    #         self.__devices.append(dev)
-
-    def create_device(self, name: str, **kwargs):
+    def add_device(self, name: str, **kwargs):
         if name in [dev.name for dev in self.__devices]:
             return None
 
@@ -133,7 +117,7 @@ class DataModel2(IDataModel2, set):
         self.__devices.append(dev)
         self.__driver.addDevice(dev)
 
-    def create_tag(self, tagname: str, **kwargs):
+    def add_tag(self, tagname: str, **kwargs):
         if tagname in [tag.name for tag in self.__tags]:
             return None
 
@@ -162,38 +146,49 @@ class DataModel2(IDataModel2, set):
         tag = Tag(device=dev, name=tagname, type_=type_, address=address, comment=comment)
         self.__tags.append(tag)
 
-    def add_tag(self, tag: Tag) -> None:
-        """Overloaded: set.add
-
-        1. Если тэг с таким именем уже существует, то действие игнорируется
-        2. Если отстутствует то тэг добавляется в существующий список тегов
-        """
-        assert Tag is not None, " None instead of Tag"
-
-
-        return None
-
-    def discard(self, tag: Tag) -> None:
+    def del_tag(self, tagname: str) -> None:
         """Overloaded: set.discard
             - Удаляется тег с указанным именем
             - обновляются списки devices и drivers
+
+            Возвращает количество удаленных тегов
         """
-        assert Tag is not None, " None instead of Tag"
 
-        key = hash(tag.name)
-        if key in self.__hash_tags:
-            super().discard(tag)
-            del self.__hash_tags[key]
-            self.__devices = self.__get_devices_from_tags()
-            # self.__drivers = self.__get_drivers_from_tags()
+        tag_out = None
+        len_in = len(self.__tags)
+        for tag in self.__tags:
+            if tag.name == tagname:
+                tag_out = tag
+        self.__tags.remove(tag_out)
 
+        return len_in - len(self.__tags)
+
+    def del_device(self, devname: str) -> None:
+        """Удаляет device если он не связан не с одним тегом """
+        pass
+
+    def clear_devices(self) -> None:
+        # super().clear()
+        # for dev in self.__devices:
+        #     if not self.tags_in_device():
+        #         self.__devices.remove(dev)
+        pass
+
+    def tags_in_device(self, devname: str) -> list:
+        """Returns tags corresponds with the device """
+        tags = [tag for tag in self.__tags if tag.device.name() == devname]
+        return tags
+
+    def find_tag_by_name(self, tagname: str) -> Tag:
+        """Finds tag by name and return it, if tag not exists return None """
+        pass
+
+    def find_device_by_name(self, devname: str) -> Device:
+        """Finds device by name and return it, if device not exists return None """
+        for dev in self.__devices:
+            if dev.name() == devname:
+                return dev
         return None
-
-    def clear(self) -> None:
-        super().clear()
-        self.__hash_tags.clear()
-        self.__devices.clear()
-        self.__drivers.clear()
 
     @staticmethod
     def find_by_name(name: str, collection):
@@ -233,11 +228,6 @@ class DataModel2(IDataModel2, set):
             devices.add(tag.device)
 
         return list(devices)
-
-    # def __get_drivers_from_tags(self) -> list:
-    #     """Returns drivers which is used by all tags"""
-    #     drivers = list()
-    #     return drivers
 
     def __str__(self):
         msg = "model:\n"
@@ -301,33 +291,42 @@ def find_tag_test(name: str):
 
 
 def test1():
-    app = QtWidgets.QApplication(sys.argv)
+    # app = QtWidgets.QApplication(sys.argv)
 
     model = DataModel2()
-    model.create_device("dev1", ip="127.0.0.1", port=10502)
-    model.create_device("dev2", ip="127.0.0.1", port=20502)
-    model.create_device("dev3", ip="127.0.0.1", port=30502)
+    model.add_device("dev1", ip="127.0.0.1", port=10502)
+    model.add_device("dev2", ip="127.0.0.1", port=20502)
+    model.add_device("dev3", ip="127.0.0.1", port=30502)
 
-    model.create_tag(tagname="TAG01", devname="dev1", type_=TagType.INT, address=100, comment="tag1 on dev1")
-    model.create_tag(tagname="TAG02", devname="dev1", type_=TagType.INT, address=101, comment="tag2 on dev1")
-    model.create_tag(tagname="TAG03", devname="dev1", type_=TagType.INT, address=102, comment="tag3 on dev1")
-    model.create_tag(tagname="TAG04", devname="dev2", type_=TagType.INT, address=100, comment="tag1 on dev1")
-    model.create_tag(tagname="TAG05", devname="dev2", type_=TagType.INT, address=101, comment="tag2 on dev1")
-    model.create_tag(tagname="TAG06", devname="dev2", type_=TagType.INT, address=102, comment="tag3 on dev1")
+    model.add_tag(tagname="TAG01", devname="dev1", type_=TagType.INT, address=100, comment="tag1 on dev1")
+    model.add_tag(tagname="TAG02", devname="dev1", type_=TagType.INT, address=101, comment="tag2 on dev1")
+    model.add_tag(tagname="TAG03", devname="dev1", type_=TagType.INT, address=102, comment="tag3 on dev1")
+    model.add_tag(tagname="TAG04", devname="dev2", type_=TagType.INT, address=100, comment="tag1 on dev1")
+    model.add_tag(tagname="TAG05", devname="dev2", type_=TagType.INT, address=101, comment="tag2 on dev1")
+    model.add_tag(tagname="TAG06", devname="dev2", type_=TagType.INT, address=102, comment="tag3 on dev1")
 
     print(model)
     print("----------------")
-    dev = model.find_device_by_name("dev1")
-    if dev:
-        dev.addRange(0, 10, "range0")
-        dev.addRange(10, 10, "range1")
+    print(model.del_tag("TAG04"))
+    print(model.del_tag("TAG05"))
+    print(model.del_tag("TAG06"))
+    print("----------------")
+    model.clear_devices()
+    print("----------------")
+    print(model)
+    print("---")
 
-    dev = model.find_device_by_name("dev2")
-    if dev:
-        dev.addRange(0, 10, "range2")
-        dev.addRange(10, 10, "range4")
-
-    return app.exec()
+    # dev = model.find_device_by_name("dev1")
+    # if dev:
+    #     dev.addRange(0, 10, "range0")
+    #     dev.addRange(10, 10, "range1")
+    #
+    # dev = model.find_device_by_name("dev2")
+    # if dev:
+    #     dev.addRange(0, 10, "range2")
+    #     dev.addRange(10, 10, "range4")
+    #
+    # return app.exec()
 
 
 def main(argv):
