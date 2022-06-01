@@ -62,12 +62,12 @@ class IDataModel2(ABC):
         pass
 
     @abstractmethod
-    def tags_in_device(self, device: Device) -> list:
+    def get_tag_from_devicename(self, device: Device) -> list:
         """Returns the tags associated with this device """
         pass
 
     @abstractmethod
-    def find_tag_by_name(self, tagname: str) -> Tag:
+    def get_tag_by_name(self, tagname: str) -> Tag:
         """Finds and Returns tag by name. Returns a tag (if exists) by its name, otherwise None """
         pass
 
@@ -93,11 +93,11 @@ class DataModel2(IDataModel2, set):
     def driver(self) -> ModbusDriver:
         return self.__driver
 
-    def devices(self):
+    def devices(self) -> list:
         """Returns all devices"""
         return self.__devices
 
-    def tags(self):
+    def tags(self) -> list:
         """Returns all tags"""
         return self.__tags
 
@@ -133,11 +133,10 @@ class DataModel2(IDataModel2, set):
         if "comment" not in kwargs.keys():
             kwargs["comment"] = ""
 
-        dev = self.find_device_by_name(kwargs.get("devname"))
+        dev = self.get_device_by_name(kwargs.get("devname"))
         if dev is None:
             print("return: dev is null")
             return None
-        # dev.addRange(0, 20, "range0")
 
         type_ = kwargs.get("type_")
         address = kwargs.get("address")
@@ -168,66 +167,59 @@ class DataModel2(IDataModel2, set):
         pass
 
     def clear_devices(self) -> None:
-        # super().clear()
-        # for dev in self.__devices:
-        #     if not self.tags_in_device():
-        #         self.__devices.remove(dev)
-        pass
+        super().clear()
+        # creating a list of unused devices
+        del_devices = [dev for dev in self.__devices if not self.get_tag_from_devicename(dev.name())]
+        print(del_devices)
+        # deleting unused devices
+        for dev in del_devices:
+            self.__devices.remove(dev)
 
-    def tags_in_device(self, devname: str) -> list:
+    def get_tag_from_devicename(self, devname: str) -> list:
         """Returns tags corresponds with the device """
         tags = [tag for tag in self.__tags if tag.device.name() == devname]
         return tags
 
-    def find_tag_by_name(self, tagname: str) -> Tag:
+    def get_tag_by_name(self, tagname: str) -> Tag:
         """Finds tag by name and return it, if tag not exists return None """
-        pass
+        for tag in self.__tags:
+            if tag.name == tagname:
+                return tag
+        return None
 
-    def find_device_by_name(self, devname: str) -> Device:
+    def get_device_by_name(self, devname: str) -> Device:
         """Finds device by name and return it, if device not exists return None """
         for dev in self.__devices:
             if dev.name() == devname:
                 return dev
         return None
 
-    @staticmethod
-    def find_by_name(name: str, collection):
-        """Returns the first object from the iterable collection with the given name (devices, drivers)
+    def get_tag(self, tagname: str=None):
+        if tagname is not None:
+            for tag in self.__tags:
+                if tag.name == tagname:
+                    return tag
+            return None
 
-        object must have 'name()->str' method
-        param[str] name - name of object
-        param[iter] collection - iterable collection of objects (list, dict itc.)
+        return None
 
-        return object, otherwise None
+    def get_device(self, devname: str=None, tagname: str=None) -> Device:
+        """Returns device by using his name or tag name. Overwise - None
+            @param: devname - name of device
+            @param: tagname - name of tag wich correcponds with device
         """
-        ret_item = None
-        for item in collection:
-            if item.name() == name:
-                ret_item = item
-                break
+        if devname is not None:
+            for tag in self.__tags:
+                if tag.device.name() == devname:
+                    return tag.device
+            return None
 
-        return ret_item
+        if tagname is not None:
+            for tag in self.__tags:
+                if tag.name == tagname:
+                    return tag.device
 
-    @staticmethod
-    def __get_hash_from_tags(tags: list) -> dict:
-        """Creates hash table of tags from tags list"""
-        hash_tags = dict()
-        for tag in tags:
-            hash_tags[hash(tag.name)] = tag
-        return hash_tags
-
-    @staticmethod
-    def __get_tags_from_hash(hash_tags: dict) -> list:
-        """Creates tags list from tags hash table"""
-        return hash_tags.values()
-
-    def __get_devices_from_tags(self) -> list:
-        """Returns devices which is used by all tags"""
-        devices = set()
-        for tag in self.__hash_tags.values():
-            devices.add(tag.device)
-
-        return list(devices)
+        return None
 
     def __str__(self):
         msg = "model:\n"
@@ -268,26 +260,26 @@ class DataModel2(IDataModel2, set):
         return ranges
 
 
-@profile
-def find_tag_test(name: str):
-    print("testing start...")
-    dev1 = DeviceCreator.create("127.0.0.1", 502, "dev1")
-    model = DataModel2()
-    tags = []
-    for i in range(1000):
-        tag = Tag(device=dev1, name="TAG{}".format(str(i)), type_=TagType.INT, address=100, comment="tag1 on dev1")
-        start_time = time.time()
-        model.add(tag)
-        end_time = time.time()
-        print(tag)
-
-    start_time = time.time()
-    for i in range(10):
-        my_tag = model.find_tag_by_name("TAG9999")
-    end_time = time.time()
-    print("my_tag: {}".format(my_tag))
-    duration = end_time - start_time
-    print("duration: {}".format(duration))
+# @profile
+# def find_tag_test(name: str):
+#     print("testing start...")
+#     dev1 = DeviceCreator.create("127.0.0.1", 502, "dev1")
+#     model = DataModel2()
+#     tags = []
+#     for i in range(1000):
+#         tag = Tag(device=dev1, name="TAG{}".format(str(i)), type_=TagType.INT, address=100, comment="tag1 on dev1")
+#         start_time = time.time()
+#         model.add(tag)
+#         end_time = time.time()
+#         print(tag)
+#
+#     start_time = time.time()
+#     for i in range(10):
+#         my_tag = model.find_tag_by_name("TAG9999")
+#     end_time = time.time()
+#     print("my_tag: {}".format(my_tag))
+#     duration = end_time - start_time
+#     print("duration: {}".format(duration))
 
 
 def test1():
@@ -307,14 +299,18 @@ def test1():
 
     print(model)
     print("----------------")
-    print(model.del_tag("TAG04"))
-    print(model.del_tag("TAG05"))
-    print(model.del_tag("TAG06"))
-    print("----------------")
+    model.del_tag("TAG04")
+    model.del_tag("TAG05")
+    # model.del_tag("TAG06")
     model.clear_devices()
-    print("----------------")
     print(model)
-    print("---")
+    print("----------------")
+    tag = model.get_tag(tagname="TAG01")
+    print(tag)
+    dev = model.get_device(devname="dev1")
+    print(dev)
+    dev = model.get_device(tagname="TAG03")
+    print(dev)
 
     # dev = model.find_device_by_name("dev1")
     # if dev:
